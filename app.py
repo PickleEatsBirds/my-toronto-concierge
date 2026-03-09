@@ -103,25 +103,30 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
     date_str = selected_date.strftime("%B %d, %Y")
     interests_str = ", ".join(final_interests)
     
-# --- STEP 1: OPEN-METEO WEATHER API (WITH CACHING) ---
-    @st.cache_data(ttl=1800) # Cache the result for 30 minutes (1800 seconds)
-    def get_weather(lat, lon, date_str):
-        try:
-            url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=America%2FNew_York&forecast_days=14"
-            response = requests.get(url, timeout=5)
-            if response.status_code == 200:
-                return response.json()
-            return None
-        except:
-            return None
+# --- 1. UTILITY FUNCTIONS (Place this BEFORE the button logic) ---
+@st.cache_data(ttl=3600) # Cache for 1 hour
+def fetch_toronto_weather(target_date_str):
+    try:
+        lat, lon = 43.7001, -79.4163
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=America%2FNew_York&forecast_days=14"
+        response = requests.get(url, timeout=10)
+        if response.status_code == 200:
+            return response.json()
+        return None
+    except:
+        return None
 
+# --- 5. THE AGENT LOGIC ---
+if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary"):
+    # ... (Your existing validation code) ...
+
+    # --- STEP 1: WEATHER (ROBUST CACHED VERSION) ---
     with st.spinner("🌡️ Fetching exact meteorological data..."):
         weather_data_found = None
-        w_res = "Weather data unavailable."
+        w_res = "Weather data currently unavailable."
         
         target_date_str = selected_date.strftime("%Y-%m-%d")
-        # Call the cached function
-        data = get_weather(43.7001, -79.4163, target_date_str)
+        data = fetch_toronto_weather(target_date_str)
         
         if data and "daily" in data:
             dates = data["daily"]["time"]
@@ -135,9 +140,9 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
                 weather_data_found = {"max": t_max, "min": t_min, "precip": precip, "wind": wind}
                 w_res = f"High {t_max}°C, Low {t_min}°C, Rain Chance {precip}%, Wind {wind}km/h"
             else:
-                w_res = "Date out of 14-day forecast window."
+                w_res = "Date is outside the 14-day forecast window."
         else:
-            w_res = "Weather API rate limit hit or service down. Using local averages.""Weather data currently unavailable."
+            w_res = "Weather API is busy. Assuming seasonal Toronto conditions."
         
   # --- STEP 2: SEARCH (THE LOCAL WHITELIST) ---
     with st.spinner(f"🔍 Scouting hidden gems for {interests_str}..."):
@@ -160,7 +165,6 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         search_results = tavily.search(
             query=query, 
             search_depth="advanced", 
-            include_images=True,
             include_domains=trusted_sites # The API will ONLY search these sites!
         )
 
