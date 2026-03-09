@@ -28,6 +28,39 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"  # THIS is the magic line!
 )
+# --- 1. SETUP & MOBILE UI FIX ---
+st.markdown("""
+    <style>
+        /* This targets the tiny 'expand' arrow on mobile devices */
+        [data-testid="collapsedControl"] {
+            background-color: #ff4b4b; /* Toronto Red */
+            border-radius: 50%;
+            width: 50px !important;
+            height: 50px !important;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            top: 20px !important;
+            left: 20px !important;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+            animation: bounce 2s infinite; /* The Attention-Getter */
+        }
+
+        /* The Bouncing Animation */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-10px);}
+            60% {transform: translateY(-5px);}
+        }
+
+        /* Make the actual arrow inside the button white and larger */
+        [data-testid="collapsedControl"] svg {
+            fill: white !important;
+            width: 30px !important;
+            height: 30px !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
 # --- CATEGORY DICTIONARY (The Niche Engine) ---
 CATEGORY_MAP = {
@@ -57,7 +90,10 @@ with st.sidebar:
 head_col1, head_col2 = st.columns([3, 1])
 with head_col1:
     st.title("🌈 What else in Toronto? ")
-    st.markdown(f"### *Your special vibe for {selected_date.strftime('%A, %B %d')}*")
+    if not final_interests:
+        st.info("👈 **Tap the arrow in the top-left corner** to set your location, budget, and date!")
+        
+    st.markdown(f"### *Your Unique vibe for {selected_date.strftime('%A, %B %d')}*")
 
 # --- 4. INPUTS (Dynamic Sub-Categories) ---
 col1, col2 = st.columns(2)
