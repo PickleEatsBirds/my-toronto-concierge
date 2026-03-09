@@ -29,7 +29,7 @@ if GEMINI_KEY:
     client = genai.Client(api_key=GEMINI_KEY)
 tavily = TavilyClient(api_key=TAVILY_KEY)
 
-MODEL_ID = 'gemini-2.0-flash'
+MODEL_ID = 'gemini-1.5-flash'
 
 # --- 1. SETUP ---
 st.set_page_config(
