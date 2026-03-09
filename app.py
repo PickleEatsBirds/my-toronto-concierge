@@ -90,8 +90,6 @@ with st.sidebar:
 head_col1, head_col2 = st.columns([3, 1])
 with head_col1:
     st.title("🌈 What else in Toronto? ")
-    if not final_interests:
-        st.info("👈 **Tap the arrow in the top-left corner** to set your location, budget, and date!")
         
     st.markdown(f"### *Your Unique vibe for {selected_date.strftime('%A, %B %d')}*")
 
