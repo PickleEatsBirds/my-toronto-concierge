@@ -22,7 +22,12 @@ tavily = TavilyClient(api_key=TAVILY_KEY)
 # Using the stable, high-capacity model to avoid 503 errors!
 MODEL_ID = 'gemini-2.5-flash'
 
-st.set_page_config(page_title="Make it Special", page_icon="🗺️", layout="wide")
+st.set_page_config(
+    page_title="Make it Special", 
+    page_icon="🌈", 
+    layout="wide",
+    initial_sidebar_state="expanded"  # THIS is the magic line!
+)
 
 # --- CATEGORY DICTIONARY (The Niche Engine) ---
 CATEGORY_MAP = {
