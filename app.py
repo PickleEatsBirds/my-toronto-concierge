@@ -11,7 +11,17 @@ import requests
 from duckduckgo_search import DDGS 
 from streamlit_extras.let_it_rain import rain
 
-# --- 1. SETUP ---
+@st.cache_data(ttl=3600) # Caches weather for 1 hour so you don't hit rate limits
+def get_toronto_weather(target_date_iso):
+    try:
+        lat, lon = 43.7001, -79.4163
+        # Requesting 14 days explicitly
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}6&longitude={lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=America%2FNew_York&forecast_days=14"
+        response = requests.get(url, timeout=5)
+        return response.json()
+    except:
+        return None
+
 GEMINI_KEY = st.secrets.get("GEMINI_KEY", "")
 TAVILY_KEY = st.secrets.get("TAVILY_KEY", "")
 
@@ -19,8 +29,7 @@ if GEMINI_KEY:
     client = genai.Client(api_key=GEMINI_KEY)
 tavily = TavilyClient(api_key=TAVILY_KEY)
 
-# Using the stable, high-capacity model to avoid 503 errors!
-MODEL_ID = 'gemini-2.5-flash'
+MODEL_ID = 'gemini-2.0-flash'
 
 # --- 1. SETUP ---
 st.set_page_config(
@@ -103,30 +112,25 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
     date_str = selected_date.strftime("%B %d, %Y")
     interests_str = ", ".join(final_interests)
     
-    # --- STEP 1: OPEN-METEO WEATHER API ---
+# --- STEP 1: OPEN-METEO WEATHER API ---
     with st.spinner("🌡️ Fetching exact meteorological data..."):
-        try:
-            lat, lon = 43.7001, -79.4163
-            target_date_iso = selected_date.strftime("%Y-%m-%d")
-            url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=America%2FNew_York&forecast_days=14"
-            
-            response = requests.get(url)
-            data = response.json()
-            daily_dates = data['daily']['time']
-            
-            if target_date_iso in daily_dates:
-                idx = daily_dates.index(target_date_iso)
-                t_max = data['daily']['temperature_2m_max'][idx]
-                t_min = data['daily']['temperature_2m_min'][idx]
-                precip = data['daily']['precipitation_probability_max'][idx]
-                wind = data['daily']['wind_speed_10m_max'][idx]
-                
-                w_res = f"High {t_max}°C, Low {t_min}°C, Rain Chance {precip}%, Max Wind {wind} km/h"
-
-            else:
-                w_res = "Forecast unavailable for this date (too far in the future)."
-        except Exception as e:
-            w_res = "Weather data unavailable."
+        weather_data = None
+        w_res = "Weather data unavailable."
+        
+        target_date_iso = selected_date.strftime("%Y-%m-%d")
+        data = get_toronto_weather(target_date_iso)
+        
+        if data and 'daily' in data and target_date_iso in data['daily']['time']:
+            idx = data['daily']['time'].index(target_date_iso)
+            weather_data = {
+                "max": data['daily']['temperature_2m_max'][idx],
+                "min": data['daily']['temperature_2m_min'][idx],
+                "precip": data['daily']['precipitation_probability_max'][idx],
+                "wind": data['daily']['wind_speed_10m_max'][idx]
+            }
+            w_res = f"High {weather_data['max']}°C, Low {weather_data['min']}°C, Rain {weather_data['precip']}%, Wind {weather_data['wind']}km/h"
+        else:
+            w_res = "Forecast not available for this date yet."
 
   # --- STEP 2: SEARCH (THE LOCAL WHITELIST) ---
     with st.spinner(f"🔍 Scouting hidden gems for {interests_str}..."):
@@ -242,19 +246,16 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         # --- DISPLAY THE RESULTS ---
         st.success("✨ Your bespoke day is ready!")
 
-        # --- WEATHER DISPLAY (MOVED HERE) ---
-        try:
-            if 't_max' in locals():
-                st.metric(
-                    label="Forecast (H / L)", 
-                    value=f"{t_max}° / {t_min}°C", 
-                    delta=f"🌧️ {precip}% | 💨 {wind} km/h", 
-                    delta_color="off"
-                )
-            else:
-                st.info(f"🌦️ {w_res}")
-        except:
-            pass
+# --- WEATHER DISPLAY ---
+        if weather_data:
+            st.metric(
+                label=f"Forecast for {selected_date.strftime('%B %d')}", 
+                value=f"{weather_data['max']}° / {weather_data['min']}°C", 
+                delta=f"🌧️ {weather_data['precip']}% | 💨 {weather_data['wind']} km/h", 
+                delta_color="off"
+            )
+        else:
+            st.info(f"🌦️ Note: {w_res}")
             
         st.divider()
         
