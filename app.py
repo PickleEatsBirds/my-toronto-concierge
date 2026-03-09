@@ -36,6 +36,12 @@ if OPENAI_API_KEY:
     oa_client = OpenAI(api_key=OPENAI_API_KEY)
 else:
     st.error("🚨 Missing OPENAI_API_KEY in Streamlit Secrets!")
+    
+if TAVILY_KEY:
+    tavily = TavilyClient(api_key=TAVILY_KEY)
+else:
+    st.error("🚨 Missing TAVILY_KEY in Streamlit Secrets!")
+    st.stop()
 
 # MODEL_ID = 'gemini-2.5-flash'
 MODEL_ID = "gpt-4o-mini"
