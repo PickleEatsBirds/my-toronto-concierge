@@ -213,7 +213,7 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         """
 
         try:
-            response = client.models.generate_content(model=MODEL_ID, contents=prompt)
+            response = oa_client.chat.completions.create(model=MODEL_ID, contents=prompt)
             full_text = response.text
             
             map_points = []
