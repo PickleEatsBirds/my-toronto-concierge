@@ -31,9 +31,11 @@ OPENAI_API_KEY = st.secrets.get("OPENAI_API_KEY", "")
 #     client = genai.Client(api_key=GEMINI_KEY)
 # tavily = TavilyClient(api_key=TAVILY_KEY)
 
+oa_client = None
 if OPENAI_API_KEY:
-    client = OpenAI(api_key=OPENAI_API_KEY)
-tavily = TavilyClient(api_key=TAVILY_KEY)
+    oa_client = OpenAI(api_key=OPENAI_API_KEY)
+else:
+    st.error("🚨 Missing OPENAI_API_KEY in Streamlit Secrets!")
 
 # MODEL_ID = 'gemini-2.5-flash'
 MODEL_ID = "gpt-4o-mini"
