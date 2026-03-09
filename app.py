@@ -166,7 +166,7 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
 
     # --- STEP 3: REASONING & STORYTELLING ---
     with st.spinner("🧠 Designing your perfect day..."):
-        if not GEMINI_KEY:
+        if not OPENAI_API_KEY:
             st.error("🚨 API Key missing! Cannot connect to the AI brain.")
             st.stop()
 
