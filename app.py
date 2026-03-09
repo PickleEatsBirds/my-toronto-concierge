@@ -22,46 +22,56 @@ tavily = TavilyClient(api_key=TAVILY_KEY)
 # Using the stable, high-capacity model to avoid 503 errors!
 MODEL_ID = 'gemini-2.5-flash'
 
+# --- 1. SETUP ---
 st.set_page_config(
     page_title="Make it Special", 
     page_icon="🌈", 
     layout="wide",
-    initial_sidebar_state="expanded"  # THIS is the magic line!
+    initial_sidebar_state="expanded" 
 )
-# --- 1. SETUP & MOBILE UI FIX ---
+
+# --- THE NUCLEAR MOBILE UI FIX ---
 st.markdown("""
     <style>
-        /* This targets the tiny 'expand' arrow on mobile devices */
-        [data-testid="collapsedControl"] {
-            background-color: #ff4b4b; /* Toronto Red */
-            border-radius: 50%;
-            width: 50px !important;
-            height: 50px !important;
+        /* 1. Target the button container */
+        div[data-testid="collapsedControl"] {
+            background-color: #ff4b4b !important;
+            border-radius: 0px 20px 20px 0px !important; /* Rounded edge on the right */
+            width: 70px !important;
+            height: 70px !important;
+            top: 30px !important;
+            left: 0px !important;
             display: flex !important;
-            align-items: center;
-            justify-content: center;
-            top: 20px !important;
-            left: 20px !important;
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
-            animation: bounce 2s infinite; /* The Attention-Getter */
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.4) !important;
+            z-index: 9999999 !important;
+            animation: pulse 2s infinite !important;
         }
 
-        /* The Bouncing Animation */
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-            40% {transform: translateY(-10px);}
-            60% {transform: translateY(-5px);}
+        /* 2. Target the button specifically */
+        div[data-testid="collapsedControl"] button {
+            background-color: transparent !important;
+            border: none !important;
+            width: 100% !important;
+            height: 100% !important;
         }
 
-        /* Make the actual arrow inside the button white and larger */
-        [data-testid="collapsedControl"] svg {
+        /* 3. Target the SVG icon (the actual > arrow) */
+        div[data-testid="collapsedControl"] svg {
             fill: white !important;
-            width: 30px !important;
-            height: 30px !important;
+            width: 40px !important;
+            height: 40px !important;
+        }
+
+        /* 4. Attention-grabbing animation */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 75, 75, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(255, 75, 75, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 75, 75, 0); }
         }
     </style>
 """, unsafe_allow_html=True)
-
 # --- CATEGORY DICTIONARY (The Niche Engine) ---
 CATEGORY_MAP = {
     "Arts and Culture": ["Art Galleries", "Art Workshops", "Theater", "Art Festivals" , "Museums", "Life Drawing"],
