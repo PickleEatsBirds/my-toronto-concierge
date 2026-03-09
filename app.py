@@ -56,7 +56,7 @@ with st.sidebar:
 # --- 3. THE INTERFACE ---
 head_col1, head_col2 = st.columns([3, 1])
 with head_col1:
-    st.title("😻🌈 What else is there in Toronto? 🌈😻")
+    st.title("🌈 What else in Toronto? ")
     st.markdown(f"### *Your special vibe for {selected_date.strftime('%A, %B %d')}*")
 
 # --- 4. INPUTS (Dynamic Sub-Categories) ---
@@ -152,7 +152,7 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
 
         prompt = f"""
         You are a passionate, witty Toronto Local Expert. 
-        Start: {start_loc} | Budget: ${budget} | Interests: {interests_str} | Weather: {w_res}
+        Start: {start_loc} | Budget: ${budget} | Interests: {interests_str} | Weather: {w_res} | Setting: {group_type}
         USER TIME WINDOW: {user_schedule}
         TRANSPORT MODE: {transport_mode}
         MAX DISTANCE: {distance_range}
@@ -167,9 +167,10 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         5. TRANSPORT & WEATHER: If 'Walking' or 'Cycling', max total distance is {distance_range}km. If Rain/Snow > 40%, keep stops indoors.
         6. PARKING: If 'Driving', include specific nearby parking (e.g., 'Park at Green P Carpark...') for EVERY location.
         7. MANDATORY FOOD: Include at least one restaurant/cafe that fits the local vibe.
-        8. PASSIONATE STORYTELLING: Write a vivid 3-to-4 sentence paragraph for the actual stops. Tell me its history and secret quirks.
+        8. CHEERFUL EXPERT TONE: Be enthusiastic and friendly, but keep it grounded. Instead of saying "magical vibes," say something like "locals love the huge windows and the smell of fresh roasting coffee." Use 2-3 punchy, high-energy sentences that highlight a factual "wow factor" about the place.
         9. PRACTICAL BULLETS: After the story, use bullet points for the [Website Link], [Google Maps Link], Parking/Transit info, and a 'Local Tip'.
-        10. SUMMARY: End with a short 'Vibe Check' summary.
+        10. SUMMARY (THE QUICK RECAP): End with a 2-sentence cheerful summary. Sentence 1: The overall mood of the plan. Sentence 2: A practical tip for the day (e.g., "Today is a high-energy mix of art and alleyway coffee! Don't forget an extra TTC token for the bus ride back.")
+        11. TRANSPORT (TTC SPECIFIC): If 'TTC' is selected, you MUST provide the specific subway station or bus/streetcar route numbers for every stop. Use the format: "TTC: Take Line [X] to [Station Name] Station" or "TTC: Route [Number] [Direction]". Be literal. Do NOT use metaphors like 'descent' or 'journey'—just give the names of the stations.
         
         Search Data for context: {search_results}
 
@@ -277,7 +278,7 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
                 st.info("Visual map unavailable this time.")
                 
         rain(
-            emoji="😻🦝🌈", 
+            emoji="😻", 
             font_size=54, 
             falling_speed=5, 
             animation_length="1" # Runs the animation once!
