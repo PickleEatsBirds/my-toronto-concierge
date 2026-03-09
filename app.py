@@ -33,6 +33,7 @@ OPENAI_API_KEY = st.secrets.get("OPENAI_API_KEY", "")
 
 if OPENAI_API_KEY:
     client = OpenAI(api_key=OPENAI_API_KEY)
+tavily = TavilyClient(api_key=TAVILY_KEY)
 
 # MODEL_ID = 'gemini-2.5-flash'
 MODEL_ID = "gpt-4o-mini"
