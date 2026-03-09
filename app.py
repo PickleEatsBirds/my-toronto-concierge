@@ -10,6 +10,7 @@ import pydeck as pdk
 import requests
 from duckduckgo_search import DDGS 
 from streamlit_extras.let_it_rain import rain
+from openai import OpenAI
 
 @st.cache_data(ttl=3600) # Caches weather for 1 hour so you don't hit rate limits
 def get_toronto_weather(target_date_iso):
@@ -22,14 +23,19 @@ def get_toronto_weather(target_date_iso):
     except:
         return None
 
-GEMINI_KEY = st.secrets.get("GEMINI_KEY", "")
+# GEMINI_KEY = st.secrets.get("GEMINI_KEY", "")
 TAVILY_KEY = st.secrets.get("TAVILY_KEY", "")
+OPENAI_API_KEY = st.secrets.get("OPENAI_API_KEY", "")
 
-if GEMINI_KEY:
-    client = genai.Client(api_key=GEMINI_KEY)
-tavily = TavilyClient(api_key=TAVILY_KEY)
+# if GEMINI_KEY:
+#     client = genai.Client(api_key=GEMINI_KEY)
+# tavily = TavilyClient(api_key=TAVILY_KEY)
 
-MODEL_ID = 'gemini-1.5-flash'
+if OPENAI_API_KEY:
+    client = OpenAI(api_key=OPENAI_API_KEY)
+
+# MODEL_ID = 'gemini-2.5-flash'
+MODEL_ID = "gpt-4o-mini"
 
 # --- 1. SETUP ---
 st.set_page_config(
