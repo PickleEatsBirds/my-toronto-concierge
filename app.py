@@ -105,46 +105,42 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
     
 # --- STEP 1: OPEN-METEO WEATHER API ---
     with st.spinner("🌡️ Fetching exact meteorological data..."):
+        weather_data_found = None # Reset every time
         try:
             lat, lon = 43.7001, -79.4163
-            # Ensure the date is a clean string: YYYY-MM-DD
             target_date_iso = selected_date.strftime("%Y-%m-%d")
             
-            # Requesting 16 days just to be safe and cover all timezones
-            url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=America%2FNew_York&forecast_days=16"
+            # Requesting 14 days with a clear timezone
+            url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=America%2FNew_York&forecast_days=14"
             
-            response = requests.get(url, timeout=10)
-            data = response.json()
+            response = requests.get(url, timeout=5)
             
-            # Check if 'daily' actually exists in the response
-            if 'daily' in data and 'time' in data['daily']:
-                daily_dates = data['daily']['time']
+            if response.status_code == 200:
+                data = response.json()
                 
-                if target_date_iso in daily_dates:
-                    idx = daily_dates.index(target_date_iso)
+                if 'daily' in data and target_date_iso in data['daily']['time']:
+                    idx = data['daily']['time'].index(target_date_iso)
                     t_max = data['daily']['temperature_2m_max'][idx]
                     t_min = data['daily']['temperature_2m_min'][idx]
                     precip = data['daily']['precipitation_probability_max'][idx]
                     wind = data['daily']['wind_speed_10m_max'][idx]
                     
                     w_res = f"High {t_max}°C, Low {t_min}°C, Rain Chance {precip}%, Max Wind {wind} km/h"
-                    
-                    # Store for the UI display
-                    weather_results = {"t_max": t_max, "t_min": t_min, "precip": precip, "wind": wind}
+                    weather_data_found = {"max": t_max, "min": t_min, "precip": precip, "wind": wind}
                 else:
-                    # Log the dates to see what the API is actually sending back
-                    st.error(f"Date {target_date_iso} not found in API response. Available dates: {daily_dates[0]} to {daily_dates[-1]}")
-                    w_res = "Forecast unavailable for this specific date."
-                    weather_results = None
+                    w_res = "Date out of forecast range (14 days)."
+            elif response.status_code == 429:
+                w_res = "Weather API rate limit hit. Please wait a moment."
             else:
-                w_res = "Weather API returned an invalid response."
-                weather_results = None
+                w_res = f"Weather API error (Status: {response.status_code})"
                     
         except Exception as e:
-            st.error(f"Weather API Error: {e}")
-            w_res = "Weather service currently unreachable."
-            weather_results = None
+            w_res = f"Connection error: {str(e)}"
 
+    # This ensures w_res always exists for the AI prompt
+    if not 'w_res' in locals():
+        w_res = "Weather data currently unavailable."
+        
   # --- STEP 2: SEARCH (THE LOCAL WHITELIST) ---
     with st.spinner(f"🔍 Scouting hidden gems for {interests_str}..."):
         # We keep the query simple...
@@ -256,22 +252,19 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         except:
             pass # Gracefully skip if images fail
         
-        # --- DISPLAY THE RESULTS ---
+# --- DISPLAY THE RESULTS ---
         st.success("✨ Your bespoke day is ready!")
-
-        # --- WEATHER DISPLAY (MOVED HERE) ---
-        try:
-            if 't_max' in locals():
-                st.metric(
-                    label="Forecast (H / L)", 
-                    value=f"{t_max}° / {t_min}°C", 
-                    delta=f"🌧️ {precip}% | 💨 {wind} km/h", 
-                    delta_color="off"
-                )
-            else:
-                st.info(f"🌦️ {w_res}")
-        except:
-            pass
+        
+        if weather_data_found:
+            st.metric(
+                label=f"Forecast for {selected_date.strftime('%B %d')}", 
+                value=f"{weather_data_found['max']}° / {weather_data_found['min']}°C", 
+                delta=f"🌧️ {weather_data_found['precip']}% | 💨 {weather_data_found['wind']} km/h", 
+                delta_color="off"
+            )
+        else:
+            # If the API failed, we show the reason here
+            st.warning(f"🌦️ Weather Note: {w_res}")
             
         st.divider()
         
