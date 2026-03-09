@@ -104,19 +104,9 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
                 wind = data['daily']['wind_speed_10m_max'][idx]
                 
                 w_res = f"High {t_max}°C, Low {t_min}°C, Rain Chance {precip}%, Max Wind {wind} km/h"
-                
-                with head_col2:
-                    st.metric(
-                        label="Forecast (H / L)", 
-                        value=f"{t_max}° / {t_min}°C", 
-                        delta=f"🌧️ {precip}% | 💨 {wind} km/h", 
-                        delta_color="off"
-                    )
+
             else:
-                w_res = "Forecast unavailable for this date (too far in the future)."
-                with head_col2:
-                    st.metric(label="Forecast", value="N/A", delta="Out of 14-day range", delta_color="off")
-                    
+                w_res = "Forecast unavailable for this date (too far in the future).
         except Exception as e:
             w_res = "Weather data unavailable."
 
@@ -127,12 +117,15 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         
         # ...but we lock the search engine inside this specific list of local/niche websites!
         trusted_sites = [
+            "reddit.com/r/askTO",       # The holy grail of local advice
+            "reddit.com/r/toronto", 
+            "reddit.com/r/FoodToronto", # Specifically for those niche eats
+            "blogto.com/eat",           # Targeted at food
+            "streetsoftoronto.com",     # Great for North York/Etobicoke gems
+            "curiocity.com",            # New openings
             "eventbrite.ca", 
             "meetup.com", 
-            "blogto.com", 
-            "cineplex.com",        # For Hot Movies!
-            "alltrails.com",       # For Hiking Trails!
-            "streetsoftoronto.com" # For local indie news/events
+            "alltrails.com"
         ]
         
         search_results = tavily.search(
@@ -156,6 +149,8 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         MAX DISTANCE: {distance_range}
         
         USER PERSONA: The user has lived in Toronto for 10 years. NO tourist traps. They want authentic, off-the-beaten-path local experiences.
+        GEOGRAPHIC SCOPE: Expand the horizon to the entire GTA (Scarborough, North York, Etobicoke, Markham, Mississauga). 
+        Authentic local favorites often exist in strip malls or residential pockets—if the search data suggests a highly-rated spot in the suburbs, PRIORITIZE it over a generic downtown cafe.
 
         INSTRUCTIONS FOR DYNAMIC ITINERARY:
         1. STRICT STOP RULES: Provide enough activities to smoothly fill the ENTIRE USER TIME WINDOW without massive gaps. Usually, this means 3 to 5 stops depending on the length of the window. Commuting DOES NOT count as an activity. 
@@ -169,6 +164,7 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         9. PRACTICAL BULLETS: After the story, use bullet points for the [Website Link], [Google Maps Link], Parking/Transit info, and a 'Local Tip'.
         10. SUMMARY (THE QUICK RECAP): End with a 2-sentence cheerful summary. Sentence 1: The overall mood of the plan. Sentence 2: A practical tip for the day (e.g., "Today is a high-energy mix of art and alleyway coffee! Don't forget an extra TTC token for the bus ride back.")
         11. TRANSPORT (TTC SPECIFIC): If 'TTC' is selected, you MUST provide the specific subway station or bus/streetcar route numbers for every stop. Use the format: "TTC: Take Line [X] to [Station Name] Station" or "TTC: Route [Number] [Direction]". Be literal. Do NOT use metaphors like 'descent' or 'journey'—just give the names of the stations.
+        12.THE SUBURBAN GEM RULE: If you find a "newly opened" spot or a "Reddit favorite" that isn't in the downtown core, include it. The user values a 20-minute drive for a legendary meal over a 5-minute walk to a mediocre one.
         
         Search Data for context: {search_results}
 
@@ -247,7 +243,7 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         out_col1, out_col2 = st.columns([1.5, 1])
         
         with out_col1:
-            st.markdown(clean_display)
+            st.markdown(processed_html, unsafe_allow_html=True)
             if master_link:
                 st.write("") 
                 st.link_button("🚗 OPEN TURN-BY-TURN ROUTE IN GOOGLE MAPS", master_link, type="primary", use_container_width=True)
