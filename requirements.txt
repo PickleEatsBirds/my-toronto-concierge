@@ -4,3 +4,5 @@ tavily-python
 pandas
 pydeck
 requests
+duckduckgo-search
+streamlit-extras
