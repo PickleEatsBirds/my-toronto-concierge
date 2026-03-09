@@ -62,7 +62,6 @@ with param_col2:
     transport_mode = st.radio("Primary Transport", ["TTC", "Walking", "Driving", "Biking"], horizontal=True)
     distance_range = st.slider("Distance Range (km)", 0, 100, 10, step=5)
 
-st.divider()
 
 # --- 4. INPUTS (Dynamic Sub-Categories) ---
 col1, col2 = st.columns(2)
