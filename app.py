@@ -116,11 +116,8 @@ def fetch_toronto_weather(target_date_str):
     except:
         return None
 
-# --- 5. THE AGENT LOGIC ---
-if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary"):
-    # ... (Your existing validation code) ...
 
-    # --- STEP 1: WEATHER (ROBUST CACHED VERSION) ---
+ # --- STEP 1: WEATHER (ROBUST CACHED VERSION) ---
     with st.spinner("🌡️ Fetching exact meteorological data..."):
         weather_data_found = None
         w_res = "Weather data currently unavailable."
