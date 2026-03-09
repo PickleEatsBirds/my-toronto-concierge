@@ -40,7 +40,7 @@ CATEGORY_MAP = {
 with st.sidebar:
     st.title("🕵️ Personalization")
     start_loc = st.text_input("Starting Location", "York Mills, Toronto")
-    group_type = st.selectbox("Setting", ["Couple", "Friends", "Solo", "Family"])
+    group_type = st.selectbox("Setting", ["Solo", "Couple", "Friends", "Family"])
     budget = st.slider("Total Day Budget ($ per person)", 0, 300, 50, step=10)
     selected_date = st.date_input("What day is the plan for?", datetime.date.today())
     transport_mode = st.radio("Primary Transport", ["TTC", "Walking", "Driving", "Biking"])
