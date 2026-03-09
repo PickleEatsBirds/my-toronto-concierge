@@ -26,8 +26,7 @@ MODEL_ID = 'gemini-2.5-flash'
 st.set_page_config(
     page_title="Make it Special", 
     page_icon="🌈", 
-    layout="wide",
-    initial_sidebar_state="expanded" 
+    layout="wide"
 )
 
 # --- CATEGORY DICTIONARY (The Niche Engine) ---
@@ -42,25 +41,28 @@ CATEGORY_MAP = {
     "Entertainment & Hobbies": ["Live Indie Music", "Board Game Meetups", "Hot Movies", "Community Festivals", "Comedy Shows"]
 }
 
-# --- 2. THE INTERFACE (Now Main Page) ---
-# Smaller title to save room on mobile
-st.markdown("<h2 style='text-align: center; margin-bottom: 0px;'>🌈 What else in Toronto?</h2>", unsafe_allow_html=True)
-st.markdown(f"<p style='text-align: center; color: gray;'>Your Unique vibe for {selected_date.strftime('%A, %B %d')}</p>", unsafe_allow_html=True)
+# --- 2. THE INTERFACE ---
+st.markdown("<h3 style='text-align: center;'>🌈 What else in Toronto?</h3>", unsafe_allow_html=True)
 
-# --- 3. PERSONALIZATION (FORMER SIDEBAR CONTENT) ---
-# We use an expander so you can still "tuck it away" once set
-with st.expander("🕵️ Personalization Settings", expanded=True):
-    param_col1, param_col2 = st.columns(2)
-    
-    with param_col1:
-        start_loc = st.text_input("Starting Location", "York Mills, Toronto")
-        selected_date = st.date_input("What day is the plan for?", datetime.date.today())
-        budget = st.slider("Total Day Budget ($ per person)", 0, 300, 50, step=10)
+# --- 3. PERSONALIZATION (Now on the Main Page) ---
+st.divider()
+st.markdown("#### 🕵️ Personalization")
 
-    with param_col2:
-        group_type = st.selectbox("Setting", ["Solo", "Couple", "Friends", "Family"])
-        transport_mode = st.radio("Primary Transport", ["TTC", "Walking", "Driving", "Biking"], horizontal=True)
-        distance_range = st.slider("Distance Range (km)", 0, 100, 10, step=5)
+# We create two columns on desktop that will stack vertically on your iPhone
+param_col1, param_col2 = st.columns(2)
+
+with param_col1:
+    start_loc = st.text_input("Starting Location", "York Mills, Toronto")
+    selected_date = st.date_input("What day is the plan for?", datetime.date.today())
+    budget = st.slider("Total Day Budget ($ per person)", 0, 300, 50, step=10)
+
+with param_col2:
+    group_type = st.selectbox("Setting", ["Solo", "Couple", "Friends", "Family"])
+    # horizontal=True makes the buttons side-by-side on your phone!
+    transport_mode = st.radio("Primary Transport", ["TTC", "Walking", "Driving", "Biking"], horizontal=True)
+    distance_range = st.slider("Distance Range (km)", 0, 100, 10, step=5)
+
+st.divider()
 
 # --- 4. INPUTS (Dynamic Sub-Categories) ---
 st.divider()
