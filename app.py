@@ -1,6 +1,6 @@
 import streamlit as st
-from google import genai # The NEW SDK
-from google.genai import types # The NEW SDK Types
+# from google import genai # The NEW SDK
+# from google.genai import types # The NEW SDK Types
 from tavily import TavilyClient
 import datetime
 import pandas as pd
