@@ -103,30 +103,47 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
     date_str = selected_date.strftime("%B %d, %Y")
     interests_str = ", ".join(final_interests)
     
-    # --- STEP 1: OPEN-METEO WEATHER API ---
+# --- STEP 1: OPEN-METEO WEATHER API ---
     with st.spinner("🌡️ Fetching exact meteorological data..."):
         try:
             lat, lon = 43.7001, -79.4163
+            # Ensure the date is a clean string: YYYY-MM-DD
             target_date_iso = selected_date.strftime("%Y-%m-%d")
-            url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=America%2FNew_York&forecast_days=14"
             
-            response = requests.get(url)
+            # Requesting 16 days just to be safe and cover all timezones
+            url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=America%2FNew_York&forecast_days=16"
+            
+            response = requests.get(url, timeout=10)
             data = response.json()
-            daily_dates = data['daily']['time']
             
-            if target_date_iso in daily_dates:
-                idx = daily_dates.index(target_date_iso)
-                t_max = data['daily']['temperature_2m_max'][idx]
-                t_min = data['daily']['temperature_2m_min'][idx]
-                precip = data['daily']['precipitation_probability_max'][idx]
-                wind = data['daily']['wind_speed_10m_max'][idx]
+            # Check if 'daily' actually exists in the response
+            if 'daily' in data and 'time' in data['daily']:
+                daily_dates = data['daily']['time']
                 
-                w_res = f"High {t_max}°C, Low {t_min}°C, Rain Chance {precip}%, Max Wind {wind} km/h"
-
+                if target_date_iso in daily_dates:
+                    idx = daily_dates.index(target_date_iso)
+                    t_max = data['daily']['temperature_2m_max'][idx]
+                    t_min = data['daily']['temperature_2m_min'][idx]
+                    precip = data['daily']['precipitation_probability_max'][idx]
+                    wind = data['daily']['wind_speed_10m_max'][idx]
+                    
+                    w_res = f"High {t_max}°C, Low {t_min}°C, Rain Chance {precip}%, Max Wind {wind} km/h"
+                    
+                    # Store for the UI display
+                    weather_results = {"t_max": t_max, "t_min": t_min, "precip": precip, "wind": wind}
+                else:
+                    # Log the dates to see what the API is actually sending back
+                    st.error(f"Date {target_date_iso} not found in API response. Available dates: {daily_dates[0]} to {daily_dates[-1]}")
+                    w_res = "Forecast unavailable for this specific date."
+                    weather_results = None
             else:
-                w_res = "Forecast unavailable for this date (too far in the future)."
+                w_res = "Weather API returned an invalid response."
+                weather_results = None
+                    
         except Exception as e:
-            w_res = "Weather data unavailable."
+            st.error(f"Weather API Error: {e}")
+            w_res = "Weather service currently unreachable."
+            weather_results = None
 
   # --- STEP 2: SEARCH (THE LOCAL WHITELIST) ---
     with st.spinner(f"🔍 Scouting hidden gems for {interests_str}..."):
