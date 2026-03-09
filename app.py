@@ -119,8 +119,6 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
                     
         except Exception as e:
             w_res = "Weather data unavailable."
-            with head_col2:
-                st.metric(label="Forecast", value="Error", delta="API offline", delta_color="off")
 
   # --- STEP 2: SEARCH (THE LOCAL WHITELIST) ---
     with st.spinner(f"🔍 Scouting hidden gems for {interests_str}..."):
@@ -229,6 +227,22 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         
         # --- DISPLAY THE RESULTS ---
         st.success("✨ Your bespoke day is ready!")
+
+        # --- WEATHER DISPLAY (MOVED HERE) ---
+        try:
+            if 't_max' in locals():
+                st.metric(
+                    label="Forecast (H / L)", 
+                    value=f"{t_max}° / {t_min}°C", 
+                    delta=f"🌧️ {precip}% | 💨 {wind} km/h", 
+                    delta_color="off"
+                )
+            else:
+                st.info(f"🌦️ {w_res}")
+        except:
+            pass
+            
+        st.divider()
         
         out_col1, out_col2 = st.columns([1.5, 1])
         
