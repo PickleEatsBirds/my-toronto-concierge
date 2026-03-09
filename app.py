@@ -12,8 +12,8 @@ from duckduckgo_search import DDGS
 from streamlit_extras.let_it_rain import rain
 
 # --- 1. SETUP ---
-GEMINI_KEY = ""
-TAVILY_KEY = ""
+GEMINI_KEY = st.secrets.get("GEMINI_KEY", "")
+TAVILY_KEY = st.secrets.get("TAVILY_KEY", "")
 
 if GEMINI_KEY:
     client = genai.Client(api_key=GEMINI_KEY)
