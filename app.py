@@ -30,48 +30,6 @@ st.set_page_config(
     initial_sidebar_state="expanded" 
 )
 
-# --- THE NUCLEAR MOBILE UI FIX ---
-st.markdown("""
-    <style>
-        /* 1. Target the button container */
-        div[data-testid="collapsedControl"] {
-            background-color: #ff4b4b !important;
-            border-radius: 0px 20px 20px 0px !important; /* Rounded edge on the right */
-            width: 70px !important;
-            height: 70px !important;
-            top: 30px !important;
-            left: 0px !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            box-shadow: 5px 5px 15px rgba(0,0,0,0.4) !important;
-            z-index: 9999999 !important;
-            animation: pulse 2s infinite !important;
-        }
-
-        /* 2. Target the button specifically */
-        div[data-testid="collapsedControl"] button {
-            background-color: transparent !important;
-            border: none !important;
-            width: 100% !important;
-            height: 100% !important;
-        }
-
-        /* 3. Target the SVG icon (the actual > arrow) */
-        div[data-testid="collapsedControl"] svg {
-            fill: white !important;
-            width: 40px !important;
-            height: 40px !important;
-        }
-
-        /* 4. Attention-grabbing animation */
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(255, 75, 75, 0.7); }
-            70% { box-shadow: 0 0 0 20px rgba(255, 75, 75, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 75, 75, 0); }
-        }
-    </style>
-""", unsafe_allow_html=True)
 # --- CATEGORY DICTIONARY (The Niche Engine) ---
 CATEGORY_MAP = {
     "Arts and Culture": ["Art Galleries", "Art Workshops", "Theater", "Art Festivals" , "Museums", "Life Drawing"],
@@ -84,29 +42,33 @@ CATEGORY_MAP = {
     "Entertainment & Hobbies": ["Live Indie Music", "Board Game Meetups", "Hot Movies", "Community Festivals", "Comedy Shows"]
 }
 
-# --- 2. SIDEBAR ---
-with st.sidebar:
-    st.title("🕵️ Personalization")
-    start_loc = st.text_input("Starting Location", "York Mills, Toronto")
-    group_type = st.selectbox("Setting", ["Solo", "Couple", "Friends", "Family"])
-    budget = st.slider("Total Day Budget ($ per person)", 0, 300, 50, step=10)
-    selected_date = st.date_input("What day is the plan for?", datetime.date.today())
-    transport_mode = st.radio("Primary Transport", ["TTC", "Walking", "Driving", "Biking"])
-    distance_range = st.slider("Distance Range (km)", 0, 100,10, step=5)
-    st.divider()
-    newsletter = st.text_area("Paste snippets from your email subscriptions here:", placeholder="e.g. 'Pop-up gallery on Broadview Ave'")
+# --- 2. THE INTERFACE (Now Main Page) ---
+# Smaller title to save room on mobile
+st.markdown("<h2 style='text-align: center; margin-bottom: 0px;'>🌈 What else in Toronto?</h2>", unsafe_allow_html=True)
+st.markdown(f"<p style='text-align: center; color: gray;'>Your Unique vibe for {selected_date.strftime('%A, %B %d')}</p>", unsafe_allow_html=True)
 
-# --- 3. THE INTERFACE ---
-head_col1, head_col2 = st.columns([3, 1])
-with head_col1:
-    st.title("🌈 What else in Toronto? ")
-        
-    st.markdown(f"### *Your Unique vibe for {selected_date.strftime('%A, %B %d')}*")
+# --- 3. PERSONALIZATION (FORMER SIDEBAR CONTENT) ---
+# We use an expander so you can still "tuck it away" once set
+with st.expander("🕵️ Personalization Settings", expanded=True):
+    param_col1, param_col2 = st.columns(2)
+    
+    with param_col1:
+        start_loc = st.text_input("Starting Location", "York Mills, Toronto")
+        selected_date = st.date_input("What day is the plan for?", datetime.date.today())
+        budget = st.slider("Total Day Budget ($ per person)", 0, 300, 50, step=10)
+
+    with param_col2:
+        group_type = st.selectbox("Setting", ["Solo", "Couple", "Friends", "Family"])
+        transport_mode = st.radio("Primary Transport", ["TTC", "Walking", "Driving", "Biking"], horizontal=True)
+        distance_range = st.slider("Distance Range (km)", 0, 100, 10, step=5)
 
 # --- 4. INPUTS (Dynamic Sub-Categories) ---
+st.divider()
 col1, col2 = st.columns(2)
+
 with col1:
     user_schedule = st.text_input("What time works for you?", placeholder="e.g. 1pm - 10pm")
+
 with col2:
     st.markdown("**What are you in the mood for?**")
     main_categories = st.multiselect("1. Choose broad vibes:", list(CATEGORY_MAP.keys()), default=["Arts and Culture"])
