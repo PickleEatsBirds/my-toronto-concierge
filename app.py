@@ -103,43 +103,41 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
     date_str = selected_date.strftime("%B %d, %Y")
     interests_str = ", ".join(final_interests)
     
-# --- STEP 1: OPEN-METEO WEATHER API ---
-    with st.spinner("🌡️ Fetching exact meteorological data..."):
-        weather_data_found = None # Reset every time
+# --- STEP 1: OPEN-METEO WEATHER API (WITH CACHING) ---
+    @st.cache_data(ttl=1800) # Cache the result for 30 minutes (1800 seconds)
+    def get_weather(lat, lon, date_str):
         try:
-            lat, lon = 43.7001, -79.4163
-            target_date_iso = selected_date.strftime("%Y-%m-%d")
-            
-            # Requesting 14 days with a clear timezone
             url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=America%2FNew_York&forecast_days=14"
-            
             response = requests.get(url, timeout=5)
-            
             if response.status_code == 200:
-                data = response.json()
-                
-                if 'daily' in data and target_date_iso in data['daily']['time']:
-                    idx = data['daily']['time'].index(target_date_iso)
-                    t_max = data['daily']['temperature_2m_max'][idx]
-                    t_min = data['daily']['temperature_2m_min'][idx]
-                    precip = data['daily']['precipitation_probability_max'][idx]
-                    wind = data['daily']['wind_speed_10m_max'][idx]
-                    
-                    w_res = f"High {t_max}°C, Low {t_min}°C, Rain Chance {precip}%, Max Wind {wind} km/h"
-                    weather_data_found = {"max": t_max, "min": t_min, "precip": precip, "wind": wind}
-                else:
-                    w_res = "Date out of forecast range (14 days)."
-            elif response.status_code == 429:
-                w_res = "Weather API rate limit hit. Please wait a moment."
-            else:
-                w_res = f"Weather API error (Status: {response.status_code})"
-                    
-        except Exception as e:
-            w_res = f"Connection error: {str(e)}"
+                return response.json()
+            return None
+        except:
+            return None
 
-    # This ensures w_res always exists for the AI prompt
-    if not 'w_res' in locals():
-        w_res = "Weather data currently unavailable."
+    with st.spinner("🌡️ Fetching exact meteorological data..."):
+        weather_data_found = None
+        w_res = "Weather data unavailable."
+        
+        target_date_str = selected_date.strftime("%Y-%m-%d")
+        # Call the cached function
+        data = get_weather(43.7001, -79.4163, target_date_str)
+        
+        if data and "daily" in data:
+            dates = data["daily"]["time"]
+            if target_date_str in dates:
+                idx = dates.index(target_date_str)
+                t_max = data["daily"]["temperature_2m_max"][idx]
+                t_min = data["daily"]["temperature_2m_min"][idx]
+                precip = data["daily"]["precipitation_probability_max"][idx]
+                wind = data["daily"]["wind_speed_10m_max"][idx]
+                
+                weather_data_found = {"max": t_max, "min": t_min, "precip": precip, "wind": wind}
+                w_res = f"High {t_max}°C, Low {t_min}°C, Rain Chance {precip}%, Wind {wind}km/h"
+            else:
+                w_res = "Date out of 14-day forecast window."
+        else:
+            w_res = "Weather API rate limit hit or service down. Using local averages.""Weather data currently unavailable."
         
   # --- STEP 2: SEARCH (THE LOCAL WHITELIST) ---
     with st.spinner(f"🔍 Scouting hidden gems for {interests_str}..."):
@@ -263,8 +261,7 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
                 delta_color="off"
             )
         else:
-            # If the API failed, we show the reason here
-            st.warning(f"🌦️ Weather Note: {w_res}")
+            st.warning(f"🌦️ {w_res}")
             
         st.divider()
         
