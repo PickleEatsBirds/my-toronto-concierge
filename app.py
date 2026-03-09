@@ -106,7 +106,7 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
                 w_res = f"High {t_max}°C, Low {t_min}°C, Rain Chance {precip}%, Max Wind {wind} km/h"
 
             else:
-                w_res = "Forecast unavailable for this date (too far in the future).
+                w_res = "Forecast unavailable for this date (too far in the future)."
         except Exception as e:
             w_res = "Weather data unavailable."
 
