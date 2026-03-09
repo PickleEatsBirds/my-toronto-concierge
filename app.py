@@ -65,11 +65,22 @@ with param_col2:
 st.divider()
 
 # --- 4. INPUTS (Dynamic Sub-Categories) ---
-st.divider()
 col1, col2 = st.columns(2)
 
 with col1:
-    user_schedule = st.text_input("What time works for you?", placeholder="e.g. 1pm - 10pm")
+    # 1. Generate a list of times (e.g., 7:00 AM to 11:30 PM)
+    times = [f"{h:02d}:{m:02d}" for h in range(7, 24) for m in (0, 30)]
+    
+    st.markdown("**When are you active?**")
+    # 2. Create two dropdowns in sub-columns
+    time_col1, time_col2 = st.columns(2)
+    with time_col1:
+        head_out = st.selectbox("Head Out Time", options=times, index=10) # Defaults to 12:00
+    with time_col2:
+        back_home = st.selectbox("Back Home Time", options=times, index=22) # Defaults to 18:00
+    
+    # 3. Combine them into the variable the AI expects
+    user_schedule = f"{head_out} to {back_home}"
 
 with col2:
     st.markdown("**What are you in the mood for?**")
