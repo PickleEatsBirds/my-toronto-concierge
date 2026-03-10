@@ -41,7 +41,7 @@ else:
 MODEL_ID = 'gemini-2.5-flash'
 
 # --- 2. PAGE CONFIG & SESSION STATE ---
-st.set_page_config(page_title="Make it Special", page_icon="🌈", layout="wide")
+st.set_page_config(page_title="Today is Different", page_icon="🌈", layout="wide")
 
 # Initialize the state manager to keep track of which screen the user is on
 if 'page_stage' not in st.session_state:
@@ -54,7 +54,7 @@ if 'mbti_choice' not in st.session_state:
 # SCREEN 1: THE SURPRISE INTRO
 # ==========================================
 if st.session_state.page_stage == 'intro':
-    st.markdown("<h1 style='text-align: center; margin-top: 100px;'>Ready for a surprise? 🎁</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; margin-top: 100px;'>Surprise? 🪄</h1>", unsafe_allow_html=True)
     st.write("")
     
     col1, col2, col3, col4 = st.columns([1, 2, 2, 1])
@@ -63,7 +63,7 @@ if st.session_state.page_stage == 'intro':
             st.session_state.page_stage = 'mbti_select'
             st.rerun()
     with col3:
-        if st.button("📝 NO, LET ME PLAN IT", use_container_width=True):
+        if st.button("📝 NO! I PLAN EVERYTHING!", use_container_width=True):
             st.session_state.page_stage = 'manual'
             st.rerun()
 
@@ -75,16 +75,16 @@ elif st.session_state.page_stage == 'mbti_select':
         st.session_state.page_stage = 'intro'
         st.rerun()
         
-    st.markdown("<h2 style='text-align: center; margin-top: 30px;'>What is your MBTI? 🧠</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; margin-top: 30px;'> Your MBTI euh? 🦄</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center;'>We will curate a magical day tailored exactly to your personality vibe.</p>", unsafe_allow_html=True)
     
-    mbti_options = ["INTJ", "INTP", "ENTJ", "ENTP", "INFJ", "INFP", "ENFJ", "ENFP", "ISTJ", "ISFJ", "ESTJ", "ESFJ", "ISTP", "ISFP", "ESTP", "ESFP"]
+    mbti_options = ["INFP", "INTJ", "INFJ", "INTP", "ISFP", "ISFJ", "ISTJ", "ISTP", "ENTJ", "ENTP",  "ENFJ", "ENFP", "ESTJ", "ESFJ", "ESTP", "ESFP"]
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         selected_mbti = st.selectbox("Choose your type:", mbti_options)
         st.write("")
-        if st.button("🧪 Brew My Perfect Day", use_container_width=True, type="primary"):
+        if st.button("🧪 Making Some Poison Just For You", use_container_width=True, type="primary"):
             st.session_state.mbti_choice = selected_mbti
             st.session_state.page_stage = 'generating_surprise'
             st.rerun()
@@ -98,21 +98,17 @@ elif st.session_state.page_stage == 'generating_surprise':
         st.rerun()
         
     # The Magic Pot Animation HTML/CSS
+# A much cooler, actual animated GIF for the potion brewing
     pot_html = f"""
     <div style="display: flex; justify-content: center; align-items: center; flex-direction: column; margin-top: 20px; margin-bottom: 20px;">
-        <div style="font-size: 60px; color: #39ff14; animation: floatUp 1.5s infinite linear;">🫧 🫧 🫧</div>
-        <div style="font-size: 100px; animation: gentleRock 2s infinite alternate ease-in-out;">🍲</div>
-        <h3 style="margin-top: 10px; font-family: monospace; color: #4CAF50;">Brewing magical green liquid for an {st.session_state.mbti_choice}...</h3>
-        <style>
-            @keyframes gentleRock {{ 0% {{ transform: rotate(-5deg); }} 100% {{ transform: rotate(5deg); }} }}
-            @keyframes floatUp {{ 0% {{ opacity: 0; transform: translateY(20px) scale(0.8); }} 50% {{ opacity: 1; transform: translateY(-10px) scale(1.1); }} 100% {{ opacity: 0; transform: translateY(-40px) scale(1.2); }} }}
-        </style>
+        <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2NuN2N6YzV1ODVoZ2puaWRpcnJkZ2dldjZzMDBnMzJnNjBiZGRreiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/hXpBDPn8bZFp7SlcFa/giphy.gif" width="250">
+        <h3 style="margin-top: 15px; font-family: monospace; color: #4CAF50;">Brewing magical green liquid for an {st.session_state.mbti_choice}...</h3>
     </div>
     """
     st.markdown(pot_html, unsafe_allow_html=True)
 
     # --- SET DEFAULT PARAMETERS FOR THE SURPRISE ---
-    start_loc = "Union Station, Toronto"
+    start_loc = "North York Center, Toronto"
     selected_date = datetime.date.today()
     budget = 100
     group_type = "Solo"
@@ -152,7 +148,7 @@ elif st.session_state.page_stage == 'generating_surprise':
         ]
         search_results = tavily.search(query=query, search_depth="advanced", include_images=True, include_domains=trusted_sites)
 
-    with st.spinner("🦉 Hogwarts is designing your perfect day..."):
+    with st.spinner("🦉 Hogwarts is listening to your heart..."):
         prompt = f"""
         You are a passionate, witty, and highly enthusiastic Toronto Local Expert. 
         Start: {start_loc} | Budget: ${budget} | Interests: {interests_str} | Weather: {w_res} | Setting: {group_type}
@@ -162,13 +158,13 @@ elif st.session_state.page_stage == 'generating_surprise':
         
         MBTI TARGET: The user is an {st.session_state.mbti_choice}. TAILOR THE ENTIRE VIBE, venues, and storytelling exactly to the traits of this personality!
         
-        USER PERSONA: The user has lived in Toronto for 10 years. NO tourist traps. They want authentic, off-the-beaten-path local experiences. Speak to them like a passionate peer—enthusiastic about the city's hidden gems, but keeping it real and grounded.
-        GEOGRAPHIC SCOPE: Expand the horizon to the entire GTA (Scarborough, North York, Etobicoke, Markham, Mississauga). 
+        USER PERSONA: NO tourist traps. They want authentic, off-the-beaten-path local experiences. Speak to them like a passionate peer—enthusiastic about the city's hidden gems, but keeping it real and grounded.
+        GEOGRAPHIC SCOPE: Expand the horizon to the entire GTA (Scarborough, North York, Etobicoke, Markham, Mississauga, Barrie, Stratford, Elora, etc). 
         Authentic local favorites often exist in strip malls or residential pockets—if the search data suggests a highly-rated spot in the suburbs, PRIORITIZE it over a generic downtown cafe.
 
         INSTRUCTIONS FOR DYNAMIC ITINERARY:
         1. STRICT STOP RULES: Provide enough activities to smoothly fill the ENTIRE USER TIME WINDOW without massive gaps. Usually, this means 3 to 5 stops depending on the length of the window. Commuting DOES NOT count as an activity. 
-        2. NEIGHBORHOOD CLUSTERING (CRITICAL): Do NOT zig-zag across the city. All stops must logically flow and ideally stay within a 15-minute radius of each other.
+        2. NEIGHBORHOOD CLUSTERING (CRITICAL): You MUST pick ONE specific neighborhood in the GTA (e.g., "Kensington Market", "The Beaches", "Markham Main Street") and keep ALL activities strictly within a 30-minute walking or transit radius of each other. DO NOT zig-zag across the city. DO NOT send the user North, then South, then North. Pick a cluster and stay there.
         3. THE PIVOT RULE: If the search data shows no exact events, or if you cancel an outdoor activity due to bad weather, YOU MUST TELL THE USER WHY (e.g., "Since it's raining, we swapped the hike for..."). 
         4. EXACT SCHEDULES: Start each event with a specific time block. Name the EXACT movie title playing, EXACT Meetup group, etc. If suggesting a movie, suggest a real current or classic movie that would be playing.
         5. NO BRACKETS: Do not use square brackets around venue names. Just bold them.
@@ -183,7 +179,7 @@ elif st.session_state.page_stage == 'generating_surprise':
         14. GROUP DYNAMICS (CRITICAL): Tailor the specific venue selection and storytelling vibe to the Setting ({group_type}). 
 
         FORMATTING TEMPLATE (YOU MUST FOLLOW THIS EXACTLY FOR EVERY STOP):
-        ### 💫 TIME BLOCK - 🐸 **VENUE NAME**
+        ### ⏰ TIME BLOCK - 📍 **VENUE NAME**
         * **The Vibe:** [1-2 passionate sentences about why locals love it]
         * **Transit/Parking:** [Specific TTC Line/Route or Parking advice]
         * **Links:** [Website](https://www.google.com/search?q=VENUE+NAME+Toronto) | [Google Maps](https://www.google.com/maps/search/[Venue+Name]+Toronto)
@@ -230,6 +226,18 @@ elif st.session_state.page_stage == 'generating_surprise':
             st.stop()
 
     st.success("✨ Your bespoke surprise day is ready!")
+    
+     # --- WEATHER DISPLAY (Restored) ---
+    if weather_data:
+        st.metric(
+            label=f"Forecast for {selected_date.strftime('%B %d')}", 
+            value=f"{weather_data['max']}° / {weather_data['min']}°C", 
+            delta=f"🌧️ {weather_data['precip']}% | 💨 {weather_data['wind']} km/h", 
+            delta_color="off"
+        )
+    else:
+        st.info(f"🌦️ Note: {w_res}")
+    
     st.divider()
     
     out_col1, out_col2 = st.columns([1.5, 1])
@@ -280,6 +288,20 @@ elif st.session_state.page_stage == 'generating_surprise':
             st.info("Visual map unavailable this time.")
             
     rain(emoji="🐱", font_size=54, falling_speed=5, animation_length="1")
+    
+    # --- THE EXPORT BUTTON ---
+    st.divider()
+    st.subheader("🪬 Save Your Plan")
+    st.caption("Download the text version of your itinerary with clickable links.")
+    file_name = f"Toronto_Itinerary_{selected_date.strftime('%b_%d')}.md"
+    st.download_button(
+        label="📄 Download Itinerary (.md)",
+        data=clean_display.encode('utf-8'), 
+        file_name=file_name,
+        mime="text/markdown",
+        type="secondary",
+        use_container_width=True
+    )
 
 # ==========================================
 # SCREEN 4: ORIGINAL MANUAL FLOW (UNCHANGED)
@@ -527,6 +549,7 @@ elif st.session_state.page_stage == 'manual':
             falling_speed=5, 
             animation_length="1"
         )
+
         
         # --- 6. THE EXPORT BUTTON ---
         st.divider()
@@ -535,7 +558,7 @@ elif st.session_state.page_stage == 'manual':
         file_name = f"Toronto_Itinerary_{selected_date.strftime('%b_%d')}.md"
         st.download_button(
             label="📄 Download Itinerary (.md)",
-            data=clean_display,
+            data=clean_display.encode('utf-8'),  # <--- THIS IS THE MAGIC FIX! ✨
             file_name=file_name,
             mime="text/markdown",
             type="secondary",
