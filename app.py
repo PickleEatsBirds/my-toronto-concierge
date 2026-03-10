@@ -17,7 +17,7 @@ def get_toronto_weather(target_date_iso):
     try:
         lat, lon = 43.7001, -79.4163
         # Requesting 14 days explicitly
-        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}6&longitude={lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=America%2FNew_York&forecast_days=14"
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=America%2FNew_York&forecast_days=14"
         response = requests.get(url, timeout=5)
         return response.json()
     except:
@@ -221,7 +221,10 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         """
 
         try:
-            response = oa_client.chat.completions.create(model=MODEL_ID, contents=prompt)
+            response = oa_client.chat.completions.create(
+                model=MODEL_ID, 
+                messages=[{"role": "user", "content": prompt}]
+            )
             full_text = response.text
             
             map_points = []
