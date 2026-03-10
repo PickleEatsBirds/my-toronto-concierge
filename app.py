@@ -200,7 +200,7 @@ elif st.session_state.page_stage == 'generating_surprise':
             - Allocate much longer, relaxed durations to each stop.
             - Schedule explicit "Rest/Wander Blocks" (e.g., "Spend 2 hours just wandering the boutique shops without a rigid plan", or "Grab a coffee, sit by the water, and just people-watch for an hour"). 
             - Prioritize a slow, stress-free pace so the user never feels rushed.
-            2. NEIGHBORHOOD CLUSTERING (CRITICAL): You MUST pick ONE specific neighborhood in the GTA (e.g., "Kensington Market", "The Beaches", "Markham Main Street") and keep ALL activities strictly within a 30-minute walking or transit radius of each other. DO NOT zig-zag across the city. DO NOT send the user North, then South, then North. Pick a cluster and stay there.
+            2. LOCAL ANCHORING & CLUSTERING (CRITICAL): You MUST build the itinerary entirely within the {distance_range} from ({start_loc}). If they are starting late in the evening, keep them in North York, Markham, or Thornhill! DO NOT make the user commute 45+ minutes to downtown Toronto just to start their evening. Find the hidden gems in their immediate vicinity. Keep ALL activities strictly within a 15-20 minute radius of each other. Be a realistic human: if the schedule starts at 19:30, nobody wants to drive across the city just for dinner. Keep it local!
             3. THE PIVOT RULE: If the search data shows no exact events, or if you cancel an outdoor activity due to bad weather, YOU MUST TELL THE USER WHY (e.g., "Since it's raining, we swapped the hike for..."). 
             4. EXACT SCHEDULES: Start each event with a specific time block. Name the EXACT movie title playing, EXACT Meetup group, etc. If suggesting a movie, suggest a real current or classic movie that would be playing.
             5. NO BRACKETS: Do not use square brackets around venue names. Just bold them.
@@ -209,8 +209,8 @@ elif st.session_state.page_stage == 'generating_surprise':
             8. PARKING: If 'Driving', include specific nearby parking (e.g., 'Park at Green P Carpark...') for EVERY location.
             9. MANDATORY FOOD: 
               - Include at least one restaurant/cafe that fits the local vibe.
-              - Unless the user specifically requested "Exotic Food Crawls", you PRIORITIZE authentic CHINESE cuisine (e.g., Chinese BBQ, Hot Pot, hand-pulled noodles, Cantonese cafes, Szechuan, Rice Noodle Soups, Ma La Tang). Then prioritize other ASIAN cuisine, then mexican food, then others.
-              - when ({group_type}) = 'Friends", add a stop to Bubble Tea shop
+              - Unless the user specifically requested "Exotic Food Crawls", you must PRIORITIZE authentic CHINESE cuisine (e.g., Chinese BBQ, Hot Pot, hand-pulled noodles, Cantonese cafes, Szechuan, Rice Noodle Soups, Ma La Tang). Then prioritize other ASIAN cuisine, then mexican food, then others.
+              - when ({group_type}) = "Friends", add a stop to Bubble Tea shop
             10. CHEERFUL & PASSIONATE TONE: Be enthusiastic and friendly! Highlight a factual "wow factor" about the place. Show genuine love for the city.
             11. THE SUBURBAN GEM RULE: If you find a "newly opened" spot or a "Reddit favorite" that isn't in the downtown core, include it. 
             12. TRANSPORT (TTC SPECIFIC): If 'TTC' is selected, you MUST provide the specific subway station or bus/streetcar route numbers for every stop. Be literal (e.g., "Take Line 2 to Christie Station").
