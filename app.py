@@ -225,7 +225,7 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
                 model=MODEL_ID, 
                 messages=[{"role": "user", "content": prompt}]
             )
-            full_text = response.text
+            full_text = response.choices[0].message.content
             
             map_points = []
             master_link = ""
