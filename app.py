@@ -54,7 +54,7 @@ CATEGORY_MAP = {
     "Entertainment & Hobbies": ["Live Indie Music", "Board Game Meetups", "Hot Movies", "Community Festivals", "Comedy Shows"]
 }
 
-st.markdown("<h3 style='text-align: center;'>🌈 Let your curiosity glow - Go Toronto!🧿 </h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center;'>🌈 What can you do in this boring Toronto? 🧿 </h3>", unsafe_allow_html=True)
 st.divider()
 st.markdown("#### 🪄 Wave Your Wand ✨")
 
@@ -213,45 +213,46 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
     with st.spinner("🖼️ Fetching relevant local photos..."):
         processed_html = clean_display
         try:
-            # 1. Find everything inside [brackets]
+            # Find everything inside [brackets]
             brackets_found = re.findall(r'\[(.*?)\]', clean_display)
             
-            # 2. Filter out junk words the AI might accidentally bracket
+            # Filter out junk
             junk = ["Website", "Google Maps", "Insert Time Block", "Insert Venue Name"]
             venues_to_search = [v for v in set(brackets_found) if v not in junk and len(v) > 3]
 
+            # 🛠️ DEBUG 1: Tell us what it found!
+            st.info(f"🔍 DEBUG - Venues detected: {venues_to_search}")
+
             if venues_to_search:
                 with DDGS() as ddgs:
-                    # Limit to top 3 to avoid getting temporarily blocked by DuckDuckGo
                     for venue_name in venues_to_search[:3]:
                         try:
-                            # Keep the search term simple for better results
                             search_term = f"{venue_name} Toronto"
-                            
-                            # Fetch the image
                             ddg_images = list(ddgs.images(keywords=search_term, region="wt-wt", safesearch="on", max_results=1))
                             
                             if ddg_images:
                                 image_url = ddg_images[0].get('image')
-                                # The proper Markdown for images!
-                                img_md = f"**{venue_name}**\n\n![{venue_name}]({image_url})"
-                                # Safely replace the placeholder with the image
+                                # Added extra spacing for Streamlit Markdown rendering
+                                img_md = f"**{venue_name}**\n\n![{venue_name}]({image_url})\n\n"
                                 processed_html = processed_html.replace(f"[{venue_name}]", img_md)
+                                
+                                # 🛠️ DEBUG 2: Success!
+                                st.success(f"📸 DEBUG - Image loaded for: {venue_name}")
                             else:
-                                # Fallback if no image exists
                                 processed_html = processed_html.replace(f"[{venue_name}]", f"**{venue_name}**")
-                        except:
-                            # If DDG fails for just this one spot, make it bold and move on
+                                
+                                # 🛠️ DEBUG 3: Empty Results
+                                st.warning(f"⚠️ DEBUG - DuckDuckGo found NO photos for: {venue_name}")
+                        except Exception as img_e:
                             processed_html = processed_html.replace(f"[{venue_name}]", f"**{venue_name}**")
                             
-            # (We intentionally DO NOT strip remaining brackets globally here to protect the links!)
-            
+                            # 🛠️ DEBUG 4: Blocked / Error
+                            st.error(f"🚨 DEBUG - DuckDuckGo Blocked us on {venue_name}: {img_e}")
+            else:
+                st.warning("⚠️ DEBUG - The AI forgot to use [Brackets] around the venues!")
+                
         except Exception as e:
-            st.warning(f"📸 Image search hiccup: {e}")
-            
-        except Exception as e:
-            # If the whole image search crashes, just strip the brackets so it looks clean
-            processed_html = clean_display.replace("[", "").replace("]", "")
+            st.error(f"📸 Master image loop crashed: {e}")
         
         st.success("✨ Your bespoke day is ready!")
 
