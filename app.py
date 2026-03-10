@@ -159,12 +159,13 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         10. CHEERFUL & PASSIONATE TONE: Be enthusiastic and friendly! Highlight a factual "wow factor" about the place. Show genuine love for the city.
         11. THE SUBURBAN GEM RULE: If you find a "newly opened" spot or a "Reddit favorite" that isn't in the downtown core, include it. 
         12. TRANSPORT (TTC SPECIFIC): If 'TTC' is selected, you MUST provide the specific subway station or bus/streetcar route numbers for every stop. Be literal (e.g., "Take Line 2 to Christie Station").
+        13. EXACT SCHEDULES & ZERO HALLUCINATION (CRITICAL): Start each event with a specific time block. If suggesting a movie, concert, or live event, you MUST ONLY use titles explicitly found in the provided 'Search Data'. If the Search Data does not list a specific movie title, DO NOT guess or invent one (e.g., do not guess unreleased movies). Instead, write "Catch a current release" and let the user check local listings.
 
         FORMATTING TEMPLATE (YOU MUST FOLLOW THIS EXACTLY FOR EVERY STOP):
-        ### ⏰ [Insert Time Block] - 📍 [[Insert Venue Name]]
+        ### ⏰ TIME BLOCK - 📍 [VENUE NAME]
         * **The Vibe:** [1-2 passionate sentences about why locals love it]
         * **Transit/Parking:** [Specific TTC Line/Route or Parking advice]
-        * **Links:** [Website](https://www.google.com/search?q=[Venue+Name]+Toronto) | [Google Maps](https://www.google.com/maps/search/[Venue+Name]+Toronto)
+        * **Links:** [Website](https://www.google.com/search?q=VENUE+NAME+Toronto) | [Google Maps](https://www.google.com/maps/search/[Venue+Name]+Toronto)
         * 💡 **Local Tip:** [One highly practical or insider tip]
         ---
         
@@ -208,25 +209,40 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
             st.error(f"🕵️ Route API Error: {e}")
             st.stop()
 
-    # --- STEP 4: VISUAL GUARDRAIL (DuckDuckGo) ---
+# --- STEP 4: VISUAL GUARDRAIL (DuckDuckGo) ---
     with st.spinner("🖼️ Fetching relevant local photos..."):
         processed_html = clean_display
         try:
+            # Find everything inside [brackets]
             brackets_found = re.findall(r'\[(.*?)\]', clean_display)
-            if brackets_found:
+            
+            # Filter out things that are obviously not venues (like "Website" or times)
+            venues_to_search = [v for v in set(brackets_found) if v not in ["Website", "Google Maps"] and len(v) > 3]
+
+            if venues_to_search:
                 with DDGS() as ddgs:
-                    # Limiting to top 3 unique venues to avoid DDG rate limits
-                    for venue_name in list(set(brackets_found))[:3]:
-                        search_term = f"{venue_name} Toronto official photo"
-                        ddg_images = list(ddgs.images(keywords=search_term, region="wt-wt", safesearch="on", type="photo", max_results=1))
+                    # Limit to top 3 unique venues
+                    for venue_name in venues_to_search[:3]:
+                        search_term = f"{venue_name} Toronto official exterior photo"
+                        
+                        # Fetch the image
+                        ddg_images = list(ddgs.images(keywords=search_term, region="wt-wt", safesearch="on", max_results=1))
                         
                         if ddg_images:
                             image_url = ddg_images[0].get('image')
+                            # Make the image large and bold the name
+                            img_md = f"**{venue_name}**\n\n![{venue_name}]({image_url})"
+                            processed_html = processed_html.replace(f"[{venue_name}]", img_md)
+                        else:
+                            # If no image found, just remove the brackets
                             processed_html = processed_html.replace(f"[{venue_name}]", f"**{venue_name}**")
-                            img_md = f"![{venue_name}]({image_url})"
-                            processed_html = processed_html.replace(f"**{venue_name}**", f"{img_md}\n\n**{venue_name}**")
-        except:
-            pass # Gracefully skip if images fail
+                            
+            # Clean up any leftover brackets that might have been missed
+            processed_html = processed_html.replace("[", "").replace("]", "")
+            
+        except Exception as e:
+            # If the whole image search crashes, just strip the brackets so it looks clean
+            processed_html = clean_display.replace("[", "").replace("]", "")
         
         st.success("✨ Your bespoke day is ready!")
 
