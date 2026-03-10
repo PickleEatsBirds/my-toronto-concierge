@@ -127,21 +127,22 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         query = f"Toronto {interests_str} exact schedule {date_str}"
         trusted_sites = [
             "reddit.com/r/askTO", "reddit.com/r/toronto", "reddit.com/r/FoodToronto", 
-            "blogto.com/eat", "streetsoftoronto.com", "curiocity.com", 
-            "eventbrite.ca", "meetup.com", "alltrails.com"
+            "blogto.com/eat","blogto.com", "streetsoftoronto.com", "curiocity.com", 
+            "eventbrite.ca", "meetup.com", "alltrails.com", "toronto.ca/explore-enjoy/festivals-events/",
+            "toronto.ca/explore-enjoy/parks-recreation/"
         ]
         search_results = tavily.search(query=query, search_depth="advanced", include_images=True, include_domains=trusted_sites)
 
     # --- STEP 3: REASONING & STORYTELLING (GEMINI) ---
     with st.spinner("🧠 Gemini is designing your perfect day..."):
         prompt = f"""
-        You are a passionate, witty Toronto Local Expert. 
+        You are a passionate, witty, and highly enthusiastic Toronto Local Expert. 
         Start: {start_loc} | Budget: ${budget} | Interests: {interests_str} | Weather: {w_res} | Setting: {group_type}
         USER TIME WINDOW: {user_schedule}
         TRANSPORT MODE: {transport_mode}
         MAX DISTANCE: {distance_range}
         
-        USER PERSONA: The user has lived in Toronto for 10 years. NO tourist traps. They want authentic, off-the-beaten-path local experiences. Speak to them like a peer with dry, witty opinions.
+        USER PERSONA: The user has lived in Toronto for 10 years. NO tourist traps. They want authentic, off-the-beaten-path local experiences. Speak to them like a passionate peer—enthusiastic about the city's hidden gems, but keeping it real and grounded.
         GEOGRAPHIC SCOPE: Expand the horizon to the entire GTA (Scarborough, North York, Etobicoke, Markham, Mississauga). 
         Authentic local favorites often exist in strip malls or residential pockets—if the search data suggests a highly-rated spot in the suburbs, PRIORITIZE it over a generic downtown cafe.
 
@@ -150,20 +151,28 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         2. NEIGHBORHOOD CLUSTERING (CRITICAL): Do NOT zig-zag across the city. All stops must logically flow and ideally stay within a 15-minute radius of each other.
         3. THE PIVOT RULE: If the search data shows no exact events, or if you cancel an outdoor activity due to bad weather, YOU MUST TELL THE USER WHY (e.g., "Since it's raining, we swapped the hike for..."). 
         4. EXACT SCHEDULES: Start each event with a specific time block. Name the EXACT movie title playing, EXACT Meetup group, etc. If suggesting a movie, suggest a real current or classic movie that would be playing.
-        5. MANDATORY BRACKETS FOR IMAGES: Every time you mention a specific venue, restaurant, or landmark name in your story, you MUST wrap it in square brackets, like this: [Distillery District] or [Terroni]. This is required for our photo engine.
-        6. SPORTS & VENUE BOOKING (CRITICAL): If the user selects sports requiring a facility, you MUST find real, specific private clubs or dedicated courts that allow booking. Do NOT suggest generic unbookable public parks. 
+        5. THE BRACKET RULE FOR IMAGES (CRITICAL): You MUST wrap the specific name of the MAIN VENUE in square brackets. Example: [Distillery District] or [BMV Books]. DO NOT put brackets around subway stations, neighborhoods, or movie titles. ONLY the physical venue/restaurant. This triggers our photo engine.
+        6. SPORTS & VENUE BOOKING: If the user selects sports requiring a facility, you MUST find real, specific private clubs or dedicated courts that allow booking. Do NOT suggest generic unbookable public parks. 
         7. TRANSPORT & WEATHER: If 'Walking' or 'Cycling', max total distance is {distance_range}km. If Rain/Snow > 40%, keep stops indoors.
         8. PARKING: If 'Driving', include specific nearby parking (e.g., 'Park at Green P Carpark...') for EVERY location.
         9. MANDATORY FOOD: Include at least one restaurant/cafe that fits the local vibe.
-        10. CHEERFUL EXPERT TONE: Be enthusiastic and friendly, but keep it grounded. Instead of saying "magical vibes," say something like "locals love the huge windows and the smell of fresh roasting coffee." Use 2-3 punchy, high-energy sentences that highlight a factual "wow factor" about the place.
-        11. PRACTICAL BULLETS: After the story, use bullet points for the [Website Link], [Google Maps Link], Parking/Transit info, and a 'Local Tip'.
-        12. SUMMARY (THE QUICK RECAP): End with a 2-sentence cheerful summary. Sentence 1: The overall mood of the plan. Sentence 2: A practical tip for the day (e.g., "Today is a high-energy mix of art and alleyway coffee! Don't forget an extra TTC token for the bus ride back.")
-        13. TRANSPORT (TTC SPECIFIC): If 'TTC' is selected, you MUST provide the specific subway station or bus/streetcar route numbers for every stop. Use the format: "TTC: Take Line [X] to [Station Name] Station" or "TTC: Route [Number] [Direction]". Be literal. Do NOT use metaphors like 'descent' or 'journey'—just give the names of the stations.
-        14. THE SUBURBAN GEM RULE: If you find a "newly opened" spot or a "Reddit favorite" that isn't in the downtown core, include it. The user values a 20-minute drive for a legendary meal over a 5-minute walk to a mediocre one.
+        10. CHEERFUL & PASSIONATE TONE: Be enthusiastic and friendly! Highlight a factual "wow factor" about the place. Show genuine love for the city.
+        11. THE SUBURBAN GEM RULE: If you find a "newly opened" spot or a "Reddit favorite" that isn't in the downtown core, include it. 
+        12. TRANSPORT (TTC SPECIFIC): If 'TTC' is selected, you MUST provide the specific subway station or bus/streetcar route numbers for every stop. Be literal (e.g., "Take Line 2 to Christie Station").
+
+        FORMATTING TEMPLATE (YOU MUST FOLLOW THIS EXACTLY FOR EVERY STOP):
+        ### ⏰ [Insert Time Block] - 📍 [[Insert Venue Name]]
+        * **The Vibe:** [1-2 passionate sentences about why locals love it]
+        * **Transit/Parking:** [Specific TTC Line/Route or Parking advice]
+        * **Links:** [Website](https://www.google.com/search?q=[Venue+Name]+Toronto) | [Google Maps](https://www.google.com/maps/search/[Venue+Name]+Toronto)
+        * 💡 **Local Tip:** [One highly practical or insider tip]
+        ---
         
+        13. SUMMARY (THE QUICK RECAP): End the entire itinerary with a 2-sentence cheerful summary. Sentence 1: The overall mood. Sentence 2: A practical tip.
+
         Search Data for context: {search_results}
 
-        CRITICAL DATA BLOCK (MUST BE AT THE VERY END):
+        CRITICAL DATA BLOCK (MUST BE AT THE VERY END EXACTLY AS SHOWN):
         Provide the map coordinates in a strict JSON block exactly like this. 
         *IMPORTANT: Your VERY FIRST point in the JSON array must be the Start Location ({start_loc}).*
         ```json
@@ -171,13 +180,11 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
           "master_link": "http://googleusercontent.com/maps.google.com/...",
           "points": [
             {{"name": "Starting Point ({start_loc})", "lat": 43.74, "lon": -79.40}},
-            {{"name": "Stop 1 Name", "lat": 43.65, "lon": -79.38}},
-            {{"name": "Stop 2 Name", "lat": 43.66, "lon": -79.40}}
+            {{"name": "Stop 1 Name", "lat": 43.65, "lon": -79.38}}
           ]
         }}
         ```
         """
-
         try:
             # Gemini Call!
             response = client.models.generate_content(
