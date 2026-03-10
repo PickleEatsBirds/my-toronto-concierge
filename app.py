@@ -209,48 +209,35 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
             st.error(f"🕵️ Route API Error: {e}")
             st.stop()
 
-# --- STEP 4: VISUAL GUARDRAIL (Powered by Tavily) ---
-    with st.spinner("🖼️ Fetching relevant local photos..."):
+# --- STEP 4: THE CAT PIVOT 🐈 ---
+    with st.spinner("🐈 Scouting local felines..."):
         processed_html = clean_display
         try:
-            # 1. Find the bracketed venues
-            brackets_found = re.findall(r'\[(.*?)\]', clean_display)
+            # Find the bracketed venues
+            brackets_found = re.findall(r'\[(.*?)\](?!\()', clean_display)
             junk = ["Website", "Google Maps", "Insert Time Block", "Insert Venue Name"]
             venues_to_search = [v for v in set(brackets_found) if v not in junk and len(v) > 3]
 
             if venues_to_search:
-                # We use the Tavily client you already set up at the top of the script!
-                for venue_name in venues_to_search[:3]:
+                for venue_name in venues_to_search:
                     try:
-                        search_term = f"{venue_name} Toronto exterior"
+                        # Fetch a random cat photo!
+                        cat_response = requests.get("https://api.thecatapi.com/v1/images/search", timeout=5).json()
+                        cat_url = cat_response[0]["url"]
                         
-                        # Fetch images using Tavily (basic depth is faster and costs fewer credits)
-                        tavily_response = tavily.search(
-                            query=search_term, 
-                            search_depth="basic", 
-                            include_images=True, 
-                            max_results=1 
-                        )
+                        # BULLETPROOF IMAGE FIX: Using HTML guarantees the image shows up and controls the size!
+                        img_html = f"**{venue_name}**<br><br><img src='{cat_url}' width='350' style='border-radius: 10px; margin-bottom: 10px;'>"
                         
-                        # Tavily stores image URLs in a specific 'images' list
-                        if tavily_response and tavily_response.get("images"):
-                            image_url = tavily_response["images"][0]
-                            # Format for Streamlit Markdown
-                            img_md = f"**{venue_name}**\n\n![{venue_name}]({image_url})\n\n"
-                            processed_html = processed_html.replace(f"[{venue_name}]", img_md)
-                        else:
-                            # Fallback if Tavily finds text but no photos
-                            processed_html = processed_html.replace(f"[{venue_name}]", f"**{venue_name}**")
-                            
-                    except Exception as img_e:
-                        # Graceful fallback if a single search fails
-                        processed_html = processed_html.replace(f"[{venue_name}]", f"**{venue_name}**")
-            
-            # Clean up any leftover brackets globally so the final text looks perfect
-            processed_html = processed_html.replace("[", "").replace("]", "")
+                        processed_html = processed_html.replace(f"[{venue_name}]", img_html)
+                        
+                    except Exception as cat_e:
+                        # Fallback if the cat API is napping
+                        processed_html = processed_html.replace(f"[{venue_name}]", f"**{venue_name}** 🐱")
+                        
+            # Notice we DO NOT strip all remaining brackets here, so your website links stay safe!
             
         except Exception as e:
-            st.warning(f"📸 Image search hiccup: {e}")
+            st.warning(f"🐈 Cat-astrophe: {e}")
         
         st.success("✨ Your bespoke day is ready!")
 
