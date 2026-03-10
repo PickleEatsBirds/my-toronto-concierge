@@ -1,6 +1,6 @@
 import streamlit as st
-# from google import genai # The NEW SDK
-# from google.genai import types # The NEW SDK Types
+from google import genai # WE ARE BACK!
+from google.genai import types
 from tavily import TavilyClient
 import datetime
 import pandas as pd
@@ -10,32 +10,26 @@ import pydeck as pdk
 import requests
 from duckduckgo_search import DDGS 
 from streamlit_extras.let_it_rain import rain
-from openai import OpenAI
 
-@st.cache_data(ttl=3600) # Caches weather for 1 hour so you don't hit rate limits
+@st.cache_data(ttl=3600) # Caches weather for 1 hour
 def get_toronto_weather(target_date_iso):
     try:
         lat, lon = 43.7001, -79.4163
-        # Requesting 14 days explicitly
         url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=America%2FNew_York&forecast_days=14"
         response = requests.get(url, timeout=5)
         return response.json()
     except:
         return None
 
-# GEMINI_KEY = st.secrets.get("GEMINI_KEY", "")
+# --- 1. SETUP & KEYS ---
+GEMINI_KEY = st.secrets.get("GEMINI_KEY", "")
 TAVILY_KEY = st.secrets.get("TAVILY_KEY", "")
-OPENAI_API_KEY = st.secrets.get("OPENAI_API_KEY", "")
 
-# if GEMINI_KEY:
-#     client = genai.Client(api_key=GEMINI_KEY)
-# tavily = TavilyClient(api_key=TAVILY_KEY)
-
-oa_client = None
-if OPENAI_API_KEY:
-    oa_client = OpenAI(api_key=OPENAI_API_KEY)
+if GEMINI_KEY:
+    client = genai.Client(api_key=GEMINI_KEY)
 else:
-    st.error("🚨 Missing OPENAI_API_KEY in Streamlit Secrets!")
+    st.error("🚨 Missing GEMINI_KEY in Streamlit Secrets!")
+    st.stop()
     
 if TAVILY_KEY:
     tavily = TavilyClient(api_key=TAVILY_KEY)
@@ -43,17 +37,12 @@ else:
     st.error("🚨 Missing TAVILY_KEY in Streamlit Secrets!")
     st.stop()
 
-# MODEL_ID = 'gemini-2.5-flash'
-MODEL_ID = "gpt-4o-mini"
+# Using your Paid Tier 2.5 Flash model
+MODEL_ID = 'gemini-2.5-flash'
 
-# --- 1. SETUP ---
-st.set_page_config(
-    page_title="Make it Special", 
-    page_icon="🌈", 
-    layout="wide"
-)
+# --- 2. THE INTERFACE ---
+st.set_page_config(page_title="Make it Special", page_icon="🌈", layout="wide")
 
-# --- CATEGORY DICTIONARY (The Niche Engine) ---
 CATEGORY_MAP = {
     "Arts and Culture": ["Art Galleries", "Art Workshops", "Theater", "Art Festivals" , "Museums", "Life Drawing"],
     "City Walk": ["Historical Architecture","Street Art Walks", "Waterfront Walk", "Hidden Courtyards","Beautiful Neighbourhoods","Cozy Streets", "Boutique Shopping", "Thifting"],
@@ -65,14 +54,10 @@ CATEGORY_MAP = {
     "Entertainment & Hobbies": ["Live Indie Music", "Board Game Meetups", "Hot Movies", "Community Festivals", "Comedy Shows"]
 }
 
-# --- 2. THE INTERFACE ---
 st.markdown("<h3 style='text-align: center;'>🌈 What else in Toronto?</h3>", unsafe_allow_html=True)
-
-# --- 3. PERSONALIZATION (Now on the Main Page) ---
 st.divider()
-st.markdown("#### 🕵️ Personalization")
+st.markdown("#### 🕵️ Pick Your Own Vibe")
 
-# We create two columns on desktop that will stack vertically on your iPhone
 param_col1, param_col2 = st.columns(2)
 
 with param_col1:
@@ -82,33 +67,24 @@ with param_col1:
 
 with param_col2:
     group_type = st.selectbox("Setting", ["Solo", "Couple", "Friends", "Family"])
-    # horizontal=True makes the buttons side-by-side on your phone!
     transport_mode = st.radio("Primary Transport", ["TTC", "Walking", "Driving", "Biking"], horizontal=True)
     distance_range = st.slider("Distance Range (km)", 0, 100, 10, step=5)
 
-
-# --- 4. INPUTS (Dynamic Sub-Categories) ---
 col1, col2 = st.columns(2)
 
 with col1:
-    # 1. Generate a list of times (e.g., 7:00 AM to 11:30 PM)
     times = [f"{h:02d}:{m:02d}" for h in range(7, 24) for m in (0, 30)]
-    
-    st.markdown("**When are you active?**")
-    # 2. Create two dropdowns in sub-columns
+    st.markdown("**When are you ready?**")
     time_col1, time_col2 = st.columns(2)
     with time_col1:
-        head_out = st.selectbox("Head Out Time", options=times, index=10) # Defaults to 12:00
+        head_out = st.selectbox("Head Out Time", options=times, index=10) 
     with time_col2:
-        back_home = st.selectbox("Back Home Time", options=times, index=22) # Defaults to 18:00
-    
-    # 3. Combine them into the variable the AI expects
+        back_home = st.selectbox("Back Home Time", options=times, index=22) 
     user_schedule = f"{head_out} to {back_home}"
 
 with col2:
     st.markdown("**What are you in the mood for?**")
     main_categories = st.multiselect("1. Choose broad vibes:", list(CATEGORY_MAP.keys()), default=["Arts and Culture"])
-    
     final_interests = []
     if main_categories:
         for cat in main_categories:
@@ -127,11 +103,10 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
     date_str = selected_date.strftime("%B %d, %Y")
     interests_str = ", ".join(final_interests)
     
-# --- STEP 1: OPEN-METEO WEATHER API ---
+    # --- STEP 1: WEATHER ---
     with st.spinner("🌡️ Fetching exact meteorological data..."):
         weather_data = None
         w_res = "Weather data unavailable."
-        
         target_date_iso = selected_date.strftime("%Y-%m-%d")
         data = get_toronto_weather(target_date_iso)
         
@@ -147,37 +122,18 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         else:
             w_res = "Forecast not available for this date yet."
 
-  # --- STEP 2: SEARCH (THE LOCAL WHITELIST) ---
+    # --- STEP 2: SEARCH ---
     with st.spinner(f"🔍 Scouting hidden gems for {interests_str}..."):
-        # We keep the query simple...
         query = f"Toronto {interests_str} exact schedule {date_str}"
-        
-        # ...but we lock the search engine inside this specific list of local/niche websites!
         trusted_sites = [
-            "reddit.com/r/askTO",       # The holy grail of local advice
-            "reddit.com/r/toronto", 
-            "reddit.com/r/FoodToronto", # Specifically for those niche eats
-            "blogto.com/eat",           # Targeted at food
-            "streetsoftoronto.com",     # Great for North York/Etobicoke gems
-            "curiocity.com",            # New openings
-            "eventbrite.ca", 
-            "meetup.com", 
-            "alltrails.com"
+            "reddit.com/r/askTO", "reddit.com/r/toronto", "reddit.com/r/FoodToronto", 
+            "blogto.com/eat", "streetsoftoronto.com", "curiocity.com", 
+            "eventbrite.ca", "meetup.com", "alltrails.com"
         ]
-        
-        search_results = tavily.search(
-            query=query, 
-            search_depth="advanced", 
-            include_images=True,
-            include_domains=trusted_sites # The API will ONLY search these sites!
-        )
+        search_results = tavily.search(query=query, search_depth="advanced", include_images=True, include_domains=trusted_sites)
 
-    # --- STEP 3: REASONING & STORYTELLING ---
-    with st.spinner("🧠 Designing your perfect day..."):
-        if not OPENAI_API_KEY:
-            st.error("🚨 API Key missing! Cannot connect to the AI brain.")
-            st.stop()
-
+    # --- STEP 3: REASONING & STORYTELLING (GEMINI) ---
+    with st.spinner("🧠 Gemini is designing your perfect day..."):
         prompt = f"""
         You are a passionate, witty Toronto Local Expert. 
         Start: {start_loc} | Budget: ${budget} | Interests: {interests_str} | Weather: {w_res} | Setting: {group_type}
@@ -185,23 +141,25 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         TRANSPORT MODE: {transport_mode}
         MAX DISTANCE: {distance_range}
         
-        USER PERSONA: The user has lived in Toronto for 10 years. NO tourist traps. They want authentic, off-the-beaten-path local experiences.
+        USER PERSONA: The user has lived in Toronto for 10 years. NO tourist traps. They want authentic, off-the-beaten-path local experiences. Speak to them like a peer with dry, witty opinions.
         GEOGRAPHIC SCOPE: Expand the horizon to the entire GTA (Scarborough, North York, Etobicoke, Markham, Mississauga). 
         Authentic local favorites often exist in strip malls or residential pockets—if the search data suggests a highly-rated spot in the suburbs, PRIORITIZE it over a generic downtown cafe.
 
         INSTRUCTIONS FOR DYNAMIC ITINERARY:
         1. STRICT STOP RULES: Provide enough activities to smoothly fill the ENTIRE USER TIME WINDOW without massive gaps. Usually, this means 3 to 5 stops depending on the length of the window. Commuting DOES NOT count as an activity. 
-        2. THE PIVOT RULE: If the search data shows no exact events, or if you cancel an outdoor activity due to bad weather, YOU MUST TELL THE USER WHY (e.g., "Since it's raining, we swapped the hike for..."). 
-        3. EXACT SCHEDULES: Start each event with a specific time block. Name the EXACT movie title playing, EXACT Meetup group, etc. If suggesting a movie, suggest a real current or classic movie that would be playing.
-        4. SPORTS & VENUE BOOKING (CRITICAL): If the user selects sports requiring a facility, you MUST find real, specific private clubs or dedicated courts that allow booking. Do NOT suggest generic unbookable public parks. 
-        5. TRANSPORT & WEATHER: If 'Walking' or 'Cycling', max total distance is {distance_range}km. If Rain/Snow > 40%, keep stops indoors.
-        6. PARKING: If 'Driving', include specific nearby parking (e.g., 'Park at Green P Carpark...') for EVERY location.
-        7. MANDATORY FOOD: Include at least one restaurant/cafe that fits the local vibe.
-        8. CHEERFUL EXPERT TONE: Be enthusiastic and friendly, but keep it grounded. Instead of saying "magical vibes," say something like "locals love the huge windows and the smell of fresh roasting coffee." Use 2-3 punchy, high-energy sentences that highlight a factual "wow factor" about the place.
-        9. PRACTICAL BULLETS: After the story, use bullet points for the [Website Link], [Google Maps Link], Parking/Transit info, and a 'Local Tip'.
-        10. SUMMARY (THE QUICK RECAP): End with a 2-sentence cheerful summary. Sentence 1: The overall mood of the plan. Sentence 2: A practical tip for the day (e.g., "Today is a high-energy mix of art and alleyway coffee! Don't forget an extra TTC token for the bus ride back.")
-        11. TRANSPORT (TTC SPECIFIC): If 'TTC' is selected, you MUST provide the specific subway station or bus/streetcar route numbers for every stop. Use the format: "TTC: Take Line [X] to [Station Name] Station" or "TTC: Route [Number] [Direction]". Be literal. Do NOT use metaphors like 'descent' or 'journey'—just give the names of the stations.
-        12.THE SUBURBAN GEM RULE: If you find a "newly opened" spot or a "Reddit favorite" that isn't in the downtown core, include it. The user values a 20-minute drive for a legendary meal over a 5-minute walk to a mediocre one.
+        2. NEIGHBORHOOD CLUSTERING (CRITICAL): Do NOT zig-zag across the city. All stops must logically flow and ideally stay within a 15-minute radius of each other.
+        3. THE PIVOT RULE: If the search data shows no exact events, or if you cancel an outdoor activity due to bad weather, YOU MUST TELL THE USER WHY (e.g., "Since it's raining, we swapped the hike for..."). 
+        4. EXACT SCHEDULES: Start each event with a specific time block. Name the EXACT movie title playing, EXACT Meetup group, etc. If suggesting a movie, suggest a real current or classic movie that would be playing.
+        5. MANDATORY BRACKETS FOR IMAGES: Every time you mention a specific venue, restaurant, or landmark name in your story, you MUST wrap it in square brackets, like this: [Distillery District] or [Terroni]. This is required for our photo engine.
+        6. SPORTS & VENUE BOOKING (CRITICAL): If the user selects sports requiring a facility, you MUST find real, specific private clubs or dedicated courts that allow booking. Do NOT suggest generic unbookable public parks. 
+        7. TRANSPORT & WEATHER: If 'Walking' or 'Cycling', max total distance is {distance_range}km. If Rain/Snow > 40%, keep stops indoors.
+        8. PARKING: If 'Driving', include specific nearby parking (e.g., 'Park at Green P Carpark...') for EVERY location.
+        9. MANDATORY FOOD: Include at least one restaurant/cafe that fits the local vibe.
+        10. CHEERFUL EXPERT TONE: Be enthusiastic and friendly, but keep it grounded. Instead of saying "magical vibes," say something like "locals love the huge windows and the smell of fresh roasting coffee." Use 2-3 punchy, high-energy sentences that highlight a factual "wow factor" about the place.
+        11. PRACTICAL BULLETS: After the story, use bullet points for the [Website Link], [Google Maps Link], Parking/Transit info, and a 'Local Tip'.
+        12. SUMMARY (THE QUICK RECAP): End with a 2-sentence cheerful summary. Sentence 1: The overall mood of the plan. Sentence 2: A practical tip for the day (e.g., "Today is a high-energy mix of art and alleyway coffee! Don't forget an extra TTC token for the bus ride back.")
+        13. TRANSPORT (TTC SPECIFIC): If 'TTC' is selected, you MUST provide the specific subway station or bus/streetcar route numbers for every stop. Use the format: "TTC: Take Line [X] to [Station Name] Station" or "TTC: Route [Number] [Direction]". Be literal. Do NOT use metaphors like 'descent' or 'journey'—just give the names of the stations.
+        14. THE SUBURBAN GEM RULE: If you find a "newly opened" spot or a "Reddit favorite" that isn't in the downtown core, include it. The user values a 20-minute drive for a legendary meal over a 5-minute walk to a mediocre one.
         
         Search Data for context: {search_results}
 
@@ -221,11 +179,12 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         """
 
         try:
-            response = oa_client.chat.completions.create(
+            # Gemini Call!
+            response = client.models.generate_content(
                 model=MODEL_ID, 
-                messages=[{"role": "user", "content": prompt}]
+                contents=prompt
             )
-            full_text = response.choices[0].message.content
+            full_text = response.text
             
             map_points = []
             master_link = ""
@@ -242,14 +201,15 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
             st.error(f"🕵️ Route API Error: {e}")
             st.stop()
 
-# --- STEP 4: VISUAL GUARDRAIL (DuckDuckGo) ---
+    # --- STEP 4: VISUAL GUARDRAIL (DuckDuckGo) ---
     with st.spinner("🖼️ Fetching relevant local photos..."):
         processed_html = clean_display
         try:
             brackets_found = re.findall(r'\[(.*?)\]', clean_display)
             if brackets_found:
                 with DDGS() as ddgs:
-                    for venue_name in set(brackets_found):
+                    # Limiting to top 3 unique venues to avoid DDG rate limits
+                    for venue_name in list(set(brackets_found))[:3]:
                         search_term = f"{venue_name} Toronto official photo"
                         ddg_images = list(ddgs.images(keywords=search_term, region="wt-wt", safesearch="on", type="photo", max_results=1))
                         
@@ -261,10 +221,9 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         except:
             pass # Gracefully skip if images fail
         
-        # --- DISPLAY THE RESULTS ---
         st.success("✨ Your bespoke day is ready!")
 
-# --- WEATHER DISPLAY ---
+    # --- WEATHER DISPLAY ---
         if weather_data:
             st.metric(
                 label=f"Forecast for {selected_date.strftime('%B %d')}", 
@@ -328,7 +287,7 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
             emoji="😻", 
             font_size=54, 
             falling_speed=5, 
-            animation_length="1" # Runs the animation once!
+            animation_length="1"
         )
         
         # --- 6. THE EXPORT BUTTON ---
