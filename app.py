@@ -207,7 +207,10 @@ elif st.session_state.page_stage == 'generating_surprise':
             6. SPORTS & VENUE BOOKING: If the user selects sports requiring a facility, you MUST find real, specific private clubs or dedicated courts that allow booking. Do NOT suggest generic unbookable public parks. 
             7. TRANSPORT & WEATHER: If 'Walking' or 'Cycling', max total distance is {distance_range}km. If Rain/Snow > 50%, keep stops indoors.
             8. PARKING: If 'Driving', include specific nearby parking (e.g., 'Park at Green P Carpark...') for EVERY location.
-            9. MANDATORY FOOD: Include at least one restaurant/cafe that fits the local vibe.
+            9. MANDATORY FOOD: 
+              - Include at least one restaurant/cafe that fits the local vibe.
+              - Unless the user specifically requested "Exotic Food Crawls", you PRIORITIZE authentic CHINESE cuisine (e.g., Chinese BBQ, Hot Pot, hand-pulled noodles, Cantonese cafes, Szechuan, Rice Noodle Soups, Ma La Tang). Then prioritize other ASIAN cuisine, then mexican food, then others.
+              - when ({group_type}) = 'Friends", add a stop to Bubble Tea shop
             10. CHEERFUL & PASSIONATE TONE: Be enthusiastic and friendly! Highlight a factual "wow factor" about the place. Show genuine love for the city.
             11. THE SUBURBAN GEM RULE: If you find a "newly opened" spot or a "Reddit favorite" that isn't in the downtown core, include it. 
             12. TRANSPORT (TTC SPECIFIC): If 'TTC' is selected, you MUST provide the specific subway station or bus/streetcar route numbers for every stop. Be literal (e.g., "Take Line 2 to Christie Station").
