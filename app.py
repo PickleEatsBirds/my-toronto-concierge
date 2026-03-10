@@ -54,9 +54,9 @@ CATEGORY_MAP = {
     "Entertainment & Hobbies": ["Live Indie Music", "Board Game Meetups", "Hot Movies", "Community Festivals", "Comedy Shows"]
 }
 
-st.markdown("<h3 style='text-align: center;'>🌈 What else in Toronto?</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center;'>🌈 Let your curiosity glow - Go Toronto!🧿 </h3>", unsafe_allow_html=True)
 st.divider()
-st.markdown("#### 🕵️ Pick Your Own Vibe")
+st.markdown("#### 🪄 Wave Your Wand ✨")
 
 param_col1, param_col2 = st.columns(2)
 
@@ -123,7 +123,7 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
             w_res = "Forecast not available for this date yet."
 
     # --- STEP 2: SEARCH ---
-    with st.spinner(f"🔍 Scouting hidden gems for {interests_str}..."):
+    with st.spinner(f"🔮 Scouting hidden gems for {interests_str}..."):
         query = f"Toronto {interests_str} exact schedule {date_str}"
         trusted_sites = [
             "reddit.com/r/askTO", "reddit.com/r/toronto", "reddit.com/r/FoodToronto", 
@@ -134,7 +134,7 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         search_results = tavily.search(query=query, search_depth="advanced", include_images=True, include_domains=trusted_sites)
 
     # --- STEP 3: REASONING & STORYTELLING (GEMINI) ---
-    with st.spinner("🧠 Gemini is designing your perfect day..."):
+    with st.spinner("🦉 Hogwarts is designing your perfect day..."):
         prompt = f"""
         You are a passionate, witty, and highly enthusiastic Toronto Local Expert. 
         Start: {start_loc} | Budget: ${budget} | Interests: {interests_str} | Weather: {w_res} | Setting: {group_type}
@@ -162,7 +162,7 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         13. EXACT SCHEDULES & ZERO HALLUCINATION (CRITICAL): Start each event with a specific time block. If suggesting a movie, concert, or live event, you MUST ONLY use titles explicitly found in the provided 'Search Data'. If the Search Data does not list a specific movie title, DO NOT guess or invent one (e.g., do not guess unreleased movies). Instead, write "Catch a current release" and let the user check local listings.
 
         FORMATTING TEMPLATE (YOU MUST FOLLOW THIS EXACTLY FOR EVERY STOP):
-        ### ⏰ TIME BLOCK - 📍 [VENUE NAME]
+        ### 💫 TIME BLOCK - 🐸 [VENUE NAME]
         * **The Vibe:** [1-2 passionate sentences about why locals love it]
         * **Transit/Parking:** [Specific TTC Line/Route or Parking advice]
         * **Links:** [Website](https://www.google.com/search?q=VENUE+NAME+Toronto) | [Google Maps](https://www.google.com/maps/search/[Venue+Name]+Toronto)
@@ -213,32 +213,41 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
     with st.spinner("🖼️ Fetching relevant local photos..."):
         processed_html = clean_display
         try:
-            # Find everything inside [brackets]
+            # 1. Find everything inside [brackets]
             brackets_found = re.findall(r'\[(.*?)\]', clean_display)
             
-            # Filter out things that are obviously not venues (like "Website" or times)
-            venues_to_search = [v for v in set(brackets_found) if v not in ["Website", "Google Maps"] and len(v) > 3]
+            # 2. Filter out junk words the AI might accidentally bracket
+            junk = ["Website", "Google Maps", "Insert Time Block", "Insert Venue Name"]
+            venues_to_search = [v for v in set(brackets_found) if v not in junk and len(v) > 3]
 
             if venues_to_search:
                 with DDGS() as ddgs:
-                    # Limit to top 3 unique venues
+                    # Limit to top 3 to avoid getting temporarily blocked by DuckDuckGo
                     for venue_name in venues_to_search[:3]:
-                        search_term = f"{venue_name} Toronto official exterior photo"
-                        
-                        # Fetch the image
-                        ddg_images = list(ddgs.images(keywords=search_term, region="wt-wt", safesearch="on", max_results=1))
-                        
-                        if ddg_images:
-                            image_url = ddg_images[0].get('image')
-                            # Make the image large and bold the name
-                            img_md = f"**{venue_name}**\n\n![{venue_name}]({image_url})"
-                            processed_html = processed_html.replace(f"[{venue_name}]", img_md)
-                        else:
-                            # If no image found, just remove the brackets
+                        try:
+                            # Keep the search term simple for better results
+                            search_term = f"{venue_name} Toronto"
+                            
+                            # Fetch the image
+                            ddg_images = list(ddgs.images(keywords=search_term, region="wt-wt", safesearch="on", max_results=1))
+                            
+                            if ddg_images:
+                                image_url = ddg_images[0].get('image')
+                                # The proper Markdown for images!
+                                img_md = f"**{venue_name}**\n\n![{venue_name}]({image_url})"
+                                # Safely replace the placeholder with the image
+                                processed_html = processed_html.replace(f"[{venue_name}]", img_md)
+                            else:
+                                # Fallback if no image exists
+                                processed_html = processed_html.replace(f"[{venue_name}]", f"**{venue_name}**")
+                        except:
+                            # If DDG fails for just this one spot, make it bold and move on
                             processed_html = processed_html.replace(f"[{venue_name}]", f"**{venue_name}**")
                             
-            # Clean up any leftover brackets that might have been missed
-            processed_html = processed_html.replace("[", "").replace("]", "")
+            # (We intentionally DO NOT strip remaining brackets globally here to protect the links!)
+            
+        except Exception as e:
+            st.warning(f"📸 Image search hiccup: {e}")
             
         except Exception as e:
             # If the whole image search crashes, just strip the brackets so it looks clean
@@ -265,7 +274,7 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
             st.markdown(processed_html, unsafe_allow_html=True)
             if master_link:
                 st.write("") 
-                st.link_button("🚗 OPEN TURN-BY-TURN ROUTE IN GOOGLE MAPS", master_link, type="primary", use_container_width=True)
+                st.link_button("🧚 OPEN TURN-BY-TURN ROUTE IN GOOGLE MAPS", master_link, type="primary", use_container_width=True)
 
         with out_col2:
             if map_points and len(map_points) > 1:
@@ -307,7 +316,7 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
                 st.info("Visual map unavailable this time.")
                 
         rain(
-            emoji="😻", 
+            emoji="🐱", 
             font_size=54, 
             falling_speed=5, 
             animation_length="1"
@@ -315,7 +324,7 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         
         # --- 6. THE EXPORT BUTTON ---
         st.divider()
-        st.subheader("📥 Save Your Plan")
+        st.subheader("🪬 Save Your Plan")
         st.caption("Download the text version of your itinerary with clickable links.")
         file_name = f"Toronto_Itinerary_{selected_date.strftime('%b_%d')}.md"
         st.download_button(
