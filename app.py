@@ -78,7 +78,7 @@ elif st.session_state.page_stage == 'mbti_select':
         st.rerun()
         
     st.markdown("<h2 style='text-align: center; margin-top: 30px;'> Your MBTI euh? 🦄</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center;'>We will curate a magical day tailored exactly to your personality vibe.</p>", unsafe_allow_html=True)
+    # st.markdown("<p style='text-align: center;'>We will curate a magical day tailored exactly to your personality vibe.</p>", unsafe_allow_html=True)
     
     mbti_options = ["INFP", "INTJ", "INFJ", "INTP", "ISFP", "ISFJ", "ISTJ", "ISTP", "ENTJ", "ENTP",  "ENFJ", "ENFP", "ESTJ", "ESFJ", "ESTP", "ESFP"]
     
@@ -86,7 +86,7 @@ elif st.session_state.page_stage == 'mbti_select':
     with col2:
         selected_mbti = st.selectbox("Choose your type:", mbti_options)
         st.write("")
-        if st.button("🧪 Making Some Poison Just For You", use_container_width=True, type="primary"):
+        if st.button("🧪 Some Poison Just For You", use_container_width=True, type="primary"):
             st.session_state.mbti_choice = selected_mbti
             st.session_state.page_stage = 'generating_surprise'
             st.rerun()
@@ -109,18 +109,48 @@ elif st.session_state.page_stage == 'generating_surprise':
     """
     st.markdown(pot_html, unsafe_allow_html=True)
 
-    # --- SET DEFAULT PARAMETERS FOR THE SURPRISE ---
-    start_loc = "North York Center, Toronto"
-    selected_date = datetime.date.today()
-    budget = 100
-    group_type = "Solo"
-    transport_mode = "TTC"
+
+import random
+
+    # --- SET DYNAMIC RANDOM PARAMETERS FOR THE SURPRISE ---
+    # We use session state here so the random parameters don't scramble if they click download!
+    if 'rand_start' not in st.session_state or st.session_state.surprise_data is None:
+        surprise_locations = [
+            "Union Station, Toronto", "Kensington Market, Toronto", "The Beaches, Toronto", "Downsview Park"
+            "High Park, Toronto", "Danforth & Broadview, Toronto", "Yonge & Eglinton, Toronto", 
+            "Scarborough Town Centre", "First Markham Place", "North York Centre, Toronto", "Little Italy", "Square One, Missisaugua"
+        ]
+        st.session_state.rand_start = random.choice(surprise_locations)
+        st.session_state.rand_budget = random.choice([0, 30, 80, 150, 250]) # From broke to baller
+        st.session_state.rand_group = random.choice(["Solo", "Couple", "Friends"]) 
+        st.session_state.rand_transport = random.choice(["TTC", "Walking", "TTC", "Driving"]) # Weighted to TTC so it's accessible
+        
+        # Randomize a 4 to 8 hour day, starting anywhere between 9am and 2pm
+        start_hour = random.randint(9, 14)
+        duration = random.randint(4, 8)
+        st.session_state.rand_schedule = f"{start_hour:02d}:00 to {start_hour + duration:02d}:00"
+
+    # Assign the scrambled values to your variables
+    start_loc = st.session_state.rand_start
+    budget = st.session_state.rand_budget
+    group_type = st.session_state.rand_group
+    transport_mode = st.session_state.rand_transport
+    user_schedule = st.session_state.rand_schedule
+    
     distance_range = 15
-    user_schedule = "11:00 to 19:00"
+    selected_date = datetime.date.today()
     
     date_str = selected_date.strftime("%B %d, %Y")
     interests_str = f"Hidden gems, authentic local spots, and highly specific activities perfectly suited for an {st.session_state.mbti_choice} personality type"
-    
+
+# --- THE SURPRISE REVEAL TEXT ---
+    st.markdown(f"""
+    <div style='text-align: center; font-size: 18px; color: #666; margin-bottom: 20px; padding: 10px; border-radius: 10px; background-color: #f0f8ff;'>
+        ✨ <b>The cauldron has spoken!</b> Brewing a <b>${budget}</b> day for <b>{group_type}</b> starting near <b>{start_loc.split(',')[0]}</b>.<br>
+        <i>({user_schedule} via {transport_mode})</i>
+    </div>
+    """, unsafe_allow_html=True)
+
     # --- EXACT AI LOGIC (WRAPPED IN MEMORY CHECK) ---
     if st.session_state.surprise_data is None:
         with st.spinner("🌡️ Fetching exact meteorological data..."):
