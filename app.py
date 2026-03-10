@@ -110,7 +110,7 @@ elif st.session_state.page_stage == 'generating_surprise':
     st.markdown(pot_html, unsafe_allow_html=True)
 
 
-import random
+    import random
 
     # --- SET DYNAMIC RANDOM PARAMETERS FOR THE SURPRISE ---
     # We use session state here so the random parameters don't scramble if they click download!
