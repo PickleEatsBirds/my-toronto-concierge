@@ -160,6 +160,11 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         11. THE SUBURBAN GEM RULE: If you find a "newly opened" spot or a "Reddit favorite" that isn't in the downtown core, include it. 
         12. TRANSPORT (TTC SPECIFIC): If 'TTC' is selected, you MUST provide the specific subway station or bus/streetcar route numbers for every stop. Be literal (e.g., "Take Line 2 to Christie Station").
         13. EXACT SCHEDULES & ZERO HALLUCINATION (CRITICAL): Start each event with a specific time block. If suggesting a movie, concert, or live event, you MUST ONLY use titles explicitly found in the provided 'Search Data'. If the Search Data does not list a specific movie title, DO NOT guess or invent one (e.g., do not guess unreleased movies). Instead, write "Catch a current release" and let the user check local listings.
+        14. GROUP DYNAMICS (CRITICAL): Tailor the specific venue selection and storytelling vibe to the Setting ({group_type}). 
+        - If 'Solo': Focus on exploration, quality 'me time', and connecting with the local community.
+        - If 'Couple': Focus on intimate, relaxing, and romantic atmospheres.
+        - If 'Friends': Focus on fun, highly social activities, and creating shared group memories.
+        - If 'Family': Focus on accessible, universally engaging, and bonding experiences.
 
         FORMATTING TEMPLATE (YOU MUST FOLLOW THIS EXACTLY FOR EVERY STOP):
         ### 💫 TIME BLOCK - 🐸 **VENUE NAME**
