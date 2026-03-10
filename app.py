@@ -151,7 +151,7 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         2. NEIGHBORHOOD CLUSTERING (CRITICAL): Do NOT zig-zag across the city. All stops must logically flow and ideally stay within a 15-minute radius of each other.
         3. THE PIVOT RULE: If the search data shows no exact events, or if you cancel an outdoor activity due to bad weather, YOU MUST TELL THE USER WHY (e.g., "Since it's raining, we swapped the hike for..."). 
         4. EXACT SCHEDULES: Start each event with a specific time block. Name the EXACT movie title playing, EXACT Meetup group, etc. If suggesting a movie, suggest a real current or classic movie that would be playing.
-        5. THE BRACKET RULE FOR IMAGES (CRITICAL): You MUST wrap the specific name of the MAIN VENUE in square brackets. Example: [Distillery District] or [BMV Books]. DO NOT put brackets around subway stations, neighborhoods, or movie titles. ONLY the physical venue/restaurant. This triggers our photo engine.
+        5. NO BRACKETS: Do not use square brackets around venue names. Just bold them.
         6. SPORTS & VENUE BOOKING: If the user selects sports requiring a facility, you MUST find real, specific private clubs or dedicated courts that allow booking. Do NOT suggest generic unbookable public parks. 
         7. TRANSPORT & WEATHER: If 'Walking' or 'Cycling', max total distance is {distance_range}km. If Rain/Snow > 40%, keep stops indoors.
         8. PARKING: If 'Driving', include specific nearby parking (e.g., 'Park at Green P Carpark...') for EVERY location.
@@ -162,7 +162,7 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         13. EXACT SCHEDULES & ZERO HALLUCINATION (CRITICAL): Start each event with a specific time block. If suggesting a movie, concert, or live event, you MUST ONLY use titles explicitly found in the provided 'Search Data'. If the Search Data does not list a specific movie title, DO NOT guess or invent one (e.g., do not guess unreleased movies). Instead, write "Catch a current release" and let the user check local listings.
 
         FORMATTING TEMPLATE (YOU MUST FOLLOW THIS EXACTLY FOR EVERY STOP):
-        ### 💫 TIME BLOCK - 🐸 [VENUE NAME]
+        ### 💫 TIME BLOCK - 🐸 **VENUE NAME**
         * **The Vibe:** [1-2 passionate sentences about why locals love it]
         * **Transit/Parking:** [Specific TTC Line/Route or Parking advice]
         * **Links:** [Website](https://www.google.com/search?q=VENUE+NAME+Toronto) | [Google Maps](https://www.google.com/maps/search/[Venue+Name]+Toronto)
@@ -209,36 +209,8 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
             st.error(f"🕵️ Route API Error: {e}")
             st.stop()
 
-# --- STEP 4: THE CAT PIVOT 🐈 ---
-    with st.spinner("🐈 Scouting local felines..."):
-        processed_html = clean_display
-        try:
-            # Find the bracketed venues
-            brackets_found = re.findall(r'\[(.*?)\](?!\()', clean_display)
-            junk = ["Website", "Google Maps", "Insert Time Block", "Insert Venue Name"]
-            venues_to_search = [v for v in set(brackets_found) if v not in junk and len(v) > 3]
-
-            if venues_to_search:
-                for venue_name in venues_to_search:
-                    try:
-                        # Fetch a random cat photo!
-                        cat_response = requests.get("https://api.thecatapi.com/v1/images/search", timeout=5).json()
-                        cat_url = cat_response[0]["url"]
-                        
-                        # BULLETPROOF IMAGE FIX: Using HTML guarantees the image shows up and controls the size!
-                        img_html = f"**{venue_name}**<br><br><img src='{cat_url}' width='350' style='border-radius: 10px; margin-bottom: 10px;'>"
-                        
-                        processed_html = processed_html.replace(f"[{venue_name}]", img_html)
-                        
-                    except Exception as cat_e:
-                        # Fallback if the cat API is napping
-                        processed_html = processed_html.replace(f"[{venue_name}]", f"**{venue_name}** 🐱")
-                        
-            # Notice we DO NOT strip all remaining brackets here, so your website links stay safe!
-            
-        except Exception as e:
-            st.warning(f"🐈 Cat-astrophe: {e}")
-        
+# --- STEP 4: THE CAT PIVOT 🐈  (deleted the image generation part)---
+   
         st.success("✨ Your bespoke day is ready!")
 
     # --- WEATHER DISPLAY ---
@@ -257,7 +229,7 @@ if st.button("🚀 Build My Epic Route", use_container_width=True, type="primary
         out_col1, out_col2 = st.columns([1.5, 1])
         
         with out_col1:
-            st.markdown(processed_html, unsafe_allow_html=True)
+            st.markdown(clean_display, unsafe_allow_html=True)
             if master_link:
                 st.write("") 
                 st.link_button("🧚 OPEN TURN-BY-TURN ROUTE IN GOOGLE MAPS", master_link, type="primary", use_container_width=True)
