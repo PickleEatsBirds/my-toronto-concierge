@@ -170,9 +170,11 @@ elif st.session_state.page_stage == 'generating_surprise':
                 w_res = f"High {weather_data['max']}°C, Low {weather_data['min']}°C, Rain {weather_data['precip']}%, Wind {weather_data['wind']}km/h"
             else:
                 w_res = "Forecast not available for this date yet."
-
-        with st.spinner(f"🔮 Scouting hidden gems for {st.session_state.mbti_choice}..."):
-            query = f"Toronto hidden gems local favorites exact schedule {date_str}"
+                
+            with st.spinner(f"🔮 Scouting hidden gems for {interests_str}..."):
+            # We split the start_loc to just grab the neighborhood name (e.g., "North York")
+                local_area = start_loc.split(',')[0] 
+                query = f"{local_area} Toronto {interests_str} exact schedule {date_str}"
             trusted_sites = [
                 "reddit.com/r/askTO", "reddit.com/r/toronto", "reddit.com/r/FoodToronto", 
                 "blogto.com/eat","blogto.com", "streetsoftoronto.com", "curiocity.com", 
@@ -205,17 +207,18 @@ elif st.session_state.page_stage == 'generating_surprise':
             4. EXACT SCHEDULES: Start each event with a specific time block. Name the EXACT movie title playing, EXACT Meetup group, etc. If suggesting a movie, suggest a real current or classic movie that would be playing.
             5. NO BRACKETS: Do not use square brackets around venue names. Just bold them.
             6. SPORTS & VENUE BOOKING: If the user selects sports requiring a facility, you MUST find real, specific private clubs or dedicated courts that allow booking. Do NOT suggest generic unbookable public parks. 
-            7. TRANSPORT & WEATHER: If 'Walking' or 'Cycling', max total distance is {distance_range}km. If Rain/Snow > 50%, keep stops indoors.
-            8. PARKING: If 'Driving', include specific nearby parking (e.g., 'Park at Green P Carpark...') for EVERY location.
-            9. MANDATORY FOOD: 
+            7. THE IRON-CLAD DISTANCE LIMIT: The ENTIRE itinerary must take place within a STRICT {distance_range}km radius of the Starting Location ({start_loc}). This applies to Driving, TTC, Walking, everything! If the user starts in North York with a 5km limit, DO NOT suggest Downtown Toronto, Queen West, or the CN Tower. Ban those words from your vocabulary. Keep them in their local {distance_range}km bubble!
+            8. WEATHER: If Rain/Snow > 50%, keep all stops indoors.
+            9. PARKING: If 'Driving', include specific nearby parking (e.g., 'Park at Green P Carpark...') for EVERY location.
+            10. MANDATORY FOOD: 
               - Include at least one restaurant/cafe that fits the local vibe.
               - Unless the user specifically requested "Exotic Food Crawls", you must PRIORITIZE authentic CHINESE cuisine (e.g., Chinese BBQ, Hot Pot, hand-pulled noodles, Cantonese cafes, Szechuan, Rice Noodle Soups, Ma La Tang). Then prioritize other ASIAN cuisine, then mexican food, then others.
               - when ({group_type}) = "Friends", add a stop to Bubble Tea shop
-            10. CHEERFUL & PASSIONATE TONE: Be enthusiastic and friendly! Highlight a factual "wow factor" about the place. Show genuine love for the city.
-            11. THE SUBURBAN GEM RULE: If you find a "newly opened" spot or a "Reddit favorite" that isn't in the downtown core, include it. 
-            12. TRANSPORT (TTC SPECIFIC): If 'TTC' is selected, you MUST provide the specific subway station or bus/streetcar route numbers for every stop. Be literal (e.g., "Take Line 2 to Christie Station").
-            13. EXACT SCHEDULES & ZERO HALLUCINATION (CRITICAL): Start each event with a specific time block. If suggesting a movie, concert, or live event, you MUST ONLY use titles explicitly found in the provided 'Search Data'. If the Search Data does not list a specific movie title, DO NOT guess or invent one (e.g., do not guess unreleased movies). Instead, write "Catch a current release" and let the user check local listings.
-            14. GROUP DYNAMICS (CRITICAL): Tailor the specific venue selection and storytelling vibe to the Setting ({group_type}). 
+            11. CHEERFUL & PASSIONATE TONE: Be enthusiastic and friendly! Highlight a factual "wow factor" about the place. Show genuine love for the city.
+            12. THE SUBURBAN GEM RULE: If you find a "newly opened" spot or a "Reddit favorite" that isn't in the downtown core, include it. 
+            13. TRANSPORT (TTC SPECIFIC): If 'TTC' is selected, you MUST provide the specific subway station or bus/streetcar route numbers for every stop. Be literal (e.g., "Take Line 2 to Christie Station").
+            14. EXACT SCHEDULES & ZERO HALLUCINATION (CRITICAL): Start each event with a specific time block. If suggesting a movie, concert, or live event, you MUST ONLY use titles explicitly found in the provided 'Search Data'. If the Search Data does not list a specific movie title, DO NOT guess or invent one (e.g., do not guess unreleased movies). Instead, write "Catch a current release" and let the user check local listings.
+            15. GROUP DYNAMICS (CRITICAL): Tailor the specific venue selection and storytelling vibe to the Setting ({group_type}). 
 
             FORMATTING TEMPLATE (YOU MUST FOLLOW THIS EXACTLY FOR EVERY STOP):
             ### ⏰ TIME BLOCK - 📍 **VENUE NAME**
