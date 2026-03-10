@@ -48,6 +48,8 @@ if 'page_stage' not in st.session_state:
     st.session_state.page_stage = 'intro'
 if 'mbti_choice' not in st.session_state:
     st.session_state.mbti_choice = None
+if 'surprise_data' not in st.session_state:     
+    st.session_state.surprise_data = None
 
 
 # ==========================================
@@ -94,11 +96,11 @@ elif st.session_state.page_stage == 'mbti_select':
 # ==========================================
 elif st.session_state.page_stage == 'generating_surprise':
     if st.button("⬅️ Start Over"):
+        st.session_state.surprise_data = None # Dumps the memory so you can generate a new day next time
         st.session_state.page_stage = 'intro'
         st.rerun()
         
     # The Magic Pot Animation HTML/CSS
-# A much cooler, actual animated GIF for the potion brewing
     pot_html = f"""
     <div style="display: flex; justify-content: center; align-items: center; flex-direction: column; margin-top: 20px; margin-bottom: 20px;">
         <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2NuN2N6YzV1ODVoZ2puaWRpcnJkZ2dldjZzMDBnMzJnNjBiZGRreiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/hXpBDPn8bZFp7SlcFa/giphy.gif" width="250">
@@ -119,115 +121,135 @@ elif st.session_state.page_stage == 'generating_surprise':
     date_str = selected_date.strftime("%B %d, %Y")
     interests_str = f"Hidden gems, authentic local spots, and highly specific activities perfectly suited for an {st.session_state.mbti_choice} personality type"
     
-    # --- EXACT AI LOGIC FROM YOUR SCRIPT (Slightly tweaked prompt for MBTI) ---
-    with st.spinner("🌡️ Fetching exact meteorological data..."):
-        weather_data = None
-        w_res = "Weather data unavailable."
-        target_date_iso = selected_date.strftime("%Y-%m-%d")
-        data = get_toronto_weather(target_date_iso)
-        
-        if data and 'daily' in data and target_date_iso in data['daily']['time']:
-            idx = data['daily']['time'].index(target_date_iso)
-            weather_data = {
-                "max": data['daily']['temperature_2m_max'][idx],
-                "min": data['daily']['temperature_2m_min'][idx],
-                "precip": data['daily']['precipitation_probability_max'][idx],
-                "wind": data['daily']['wind_speed_10m_max'][idx]
-            }
-            w_res = f"High {weather_data['max']}°C, Low {weather_data['min']}°C, Rain {weather_data['precip']}%, Wind {weather_data['wind']}km/h"
-        else:
-            w_res = "Forecast not available for this date yet."
-
-    with st.spinner(f"🔮 Scouting hidden gems for {st.session_state.mbti_choice}..."):
-        query = f"Toronto hidden gems local favorites exact schedule {date_str}"
-        trusted_sites = [
-            "reddit.com/r/askTO", "reddit.com/r/toronto", "reddit.com/r/FoodToronto", 
-            "blogto.com/eat","blogto.com", "streetsoftoronto.com", "curiocity.com", 
-            "eventbrite.ca", "meetup.com", "alltrails.com", "toronto.ca/explore-enjoy/festivals-events/",
-            "toronto.ca/explore-enjoy/parks-recreation/"
-        ]
-        search_results = tavily.search(query=query, search_depth="advanced", include_images=True, include_domains=trusted_sites)
-
-    with st.spinner("🦉 Hogwarts is listening to your heart..."):
-        prompt = f"""
-        You are a passionate, witty, and highly enthusiastic Toronto Local Expert. 
-        Start: {start_loc} | Budget: ${budget} | Interests: {interests_str} | Weather: {w_res} | Setting: {group_type}
-        USER TIME WINDOW: {user_schedule}
-        TRANSPORT MODE: {transport_mode}
-        MAX DISTANCE: {distance_range}
-        
-        MBTI TARGET: The user is an {st.session_state.mbti_choice}. TAILOR THE ENTIRE VIBE, venues, and storytelling exactly to the traits of this personality!
-        
-        USER PERSONA: NO tourist traps. They want authentic, off-the-beaten-path local experiences. Speak to them like a passionate peer—enthusiastic about the city's hidden gems, but keeping it real and grounded.
-        GEOGRAPHIC SCOPE: Expand the horizon to the entire GTA (Scarborough, North York, Etobicoke, Markham, Mississauga, Barrie, Stratford, Elora, etc). 
-        Authentic local favorites often exist in strip malls or residential pockets—if the search data suggests a highly-rated spot in the suburbs, PRIORITIZE it over a generic downtown cafe.
-
-        INSTRUCTIONS FOR DYNAMIC ITINERARY:
-        1. STRICT STOP RULES: Provide enough activities to smoothly fill the ENTIRE USER TIME WINDOW without massive gaps. Usually, this means 3 to 5 stops depending on the length of the window. Commuting DOES NOT count as an activity. 
-        2. NEIGHBORHOOD CLUSTERING (CRITICAL): You MUST pick ONE specific neighborhood in the GTA (e.g., "Kensington Market", "The Beaches", "Markham Main Street") and keep ALL activities strictly within a 30-minute walking or transit radius of each other. DO NOT zig-zag across the city. DO NOT send the user North, then South, then North. Pick a cluster and stay there.
-        3. THE PIVOT RULE: If the search data shows no exact events, or if you cancel an outdoor activity due to bad weather, YOU MUST TELL THE USER WHY (e.g., "Since it's raining, we swapped the hike for..."). 
-        4. EXACT SCHEDULES: Start each event with a specific time block. Name the EXACT movie title playing, EXACT Meetup group, etc. If suggesting a movie, suggest a real current or classic movie that would be playing.
-        5. NO BRACKETS: Do not use square brackets around venue names. Just bold them.
-        6. SPORTS & VENUE BOOKING: If the user selects sports requiring a facility, you MUST find real, specific private clubs or dedicated courts that allow booking. Do NOT suggest generic unbookable public parks. 
-        7. TRANSPORT & WEATHER: If 'Walking' or 'Cycling', max total distance is {distance_range}km. If Rain/Snow > 50%, keep stops indoors.
-        8. PARKING: If 'Driving', include specific nearby parking (e.g., 'Park at Green P Carpark...') for EVERY location.
-        9. MANDATORY FOOD: Include at least one restaurant/cafe that fits the local vibe.
-        10. CHEERFUL & PASSIONATE TONE: Be enthusiastic and friendly! Highlight a factual "wow factor" about the place. Show genuine love for the city.
-        11. THE SUBURBAN GEM RULE: If you find a "newly opened" spot or a "Reddit favorite" that isn't in the downtown core, include it. 
-        12. TRANSPORT (TTC SPECIFIC): If 'TTC' is selected, you MUST provide the specific subway station or bus/streetcar route numbers for every stop. Be literal (e.g., "Take Line 2 to Christie Station").
-        13. EXACT SCHEDULES & ZERO HALLUCINATION (CRITICAL): Start each event with a specific time block. If suggesting a movie, concert, or live event, you MUST ONLY use titles explicitly found in the provided 'Search Data'. If the Search Data does not list a specific movie title, DO NOT guess or invent one (e.g., do not guess unreleased movies). Instead, write "Catch a current release" and let the user check local listings.
-        14. GROUP DYNAMICS (CRITICAL): Tailor the specific venue selection and storytelling vibe to the Setting ({group_type}). 
-
-        FORMATTING TEMPLATE (YOU MUST FOLLOW THIS EXACTLY FOR EVERY STOP):
-        ### ⏰ TIME BLOCK - 📍 **VENUE NAME**
-        * **The Vibe:** [1-2 passionate sentences about why locals love it]
-        * **Transit/Parking:** [Specific TTC Line/Route or Parking advice]
-        * **Links:** [Website](https://www.google.com/search?q=VENUE+NAME+Toronto) | [Google Maps](https://www.google.com/maps/search/[Venue+Name]+Toronto)
-        * 💡 **Local Tip:** [One highly practical or insider tip]
-        ---
-        
-        13. SUMMARY (THE QUICK RECAP): End the entire itinerary with a 2-sentence cheerful summary. Sentence 1: The overall mood. Sentence 2: A practical tip.
-
-        Search Data for context: {search_results}
-
-        CRITICAL DATA BLOCK (MUST BE AT THE VERY END EXACTLY AS SHOWN):
-        Provide the map coordinates in a strict JSON block exactly like this. 
-        *IMPORTANT: Your VERY FIRST point in the JSON array must be the Start Location ({start_loc}).*
-        ```json
-        {{
-          "master_link": "http://googleusercontent.com/maps.google.com/...",
-          "points": [
-            {{"name": "Starting Point ({start_loc})", "lat": 43.74, "lon": -79.40}},
-            {{"name": "Stop 1 Name", "lat": 43.65, "lon": -79.38}}
-          ]
-        }}
-        ```
-        """
-        try:
-            response = client.models.generate_content(
-                model=MODEL_ID, 
-                contents=prompt
-            )
-            full_text = response.text
+    # --- EXACT AI LOGIC (WRAPPED IN MEMORY CHECK) ---
+    if st.session_state.surprise_data is None:
+        with st.spinner("🌡️ Fetching exact meteorological data..."):
+            weather_data = None
+            w_res = "Weather data unavailable."
+            target_date_iso = selected_date.strftime("%Y-%m-%d")
+            data = get_toronto_weather(target_date_iso)
             
-            map_points = []
-            master_link = ""
-            clean_display = full_text
+            if data and 'daily' in data and target_date_iso in data['daily']['time']:
+                idx = data['daily']['time'].index(target_date_iso)
+                weather_data = {
+                    "max": data['daily']['temperature_2m_max'][idx],
+                    "min": data['daily']['temperature_2m_min'][idx],
+                    "precip": data['daily']['precipitation_probability_max'][idx],
+                    "wind": data['daily']['wind_speed_10m_max'][idx]
+                }
+                w_res = f"High {weather_data['max']}°C, Low {weather_data['min']}°C, Rain {weather_data['precip']}%, Wind {weather_data['wind']}km/h"
+            else:
+                w_res = "Forecast not available for this date yet."
+
+        with st.spinner(f"🔮 Scouting hidden gems for {st.session_state.mbti_choice}..."):
+            query = f"Toronto hidden gems local favorites exact schedule {date_str}"
+            trusted_sites = [
+                "reddit.com/r/askTO", "reddit.com/r/toronto", "reddit.com/r/FoodToronto", 
+                "blogto.com/eat","blogto.com", "streetsoftoronto.com", "curiocity.com", 
+                "eventbrite.ca", "meetup.com", "alltrails.com", "toronto.ca/explore-enjoy/festivals-events/",
+                "toronto.ca/explore-enjoy/parks-recreation/"
+            ]
+            search_results = tavily.search(query=query, search_depth="advanced", include_images=True, include_domains=trusted_sites)
+
+        with st.spinner("🦉 Hogwarts is listening to your heart..."):
+            prompt = f"""
+            You are a passionate, witty, and highly enthusiastic Toronto Local Expert. 
+            Start: {start_loc} | Budget: ${budget} | Interests: {interests_str} | Weather: {w_res} | Setting: {group_type}
+            USER TIME WINDOW: {user_schedule}
+            TRANSPORT MODE: {transport_mode}
+            MAX DISTANCE: {distance_range}
             
-            json_match = re.search(r'```json\n(.*?)\n```', full_text, re.DOTALL)
-            if json_match:
-                data = json.loads(json_match.group(1))
-                map_points = data.get("points", [])
-                master_link = data.get("master_link", "")
-                clean_display = re.sub(r'```json\n(.*?)\n```', '', full_text, flags=re.DOTALL)
+            MBTI TARGET: The user is an {st.session_state.mbti_choice}. TAILOR THE ENTIRE VIBE, venues, and storytelling exactly to the traits of this personality!
+            
+            USER PERSONA: NO tourist traps. They want authentic, off-the-beaten-path local experiences. Speak to them like a passionate peer—enthusiastic about the city's hidden gems, but keeping it real and grounded.
+            GEOGRAPHIC SCOPE: Expand the horizon to the entire GTA (Scarborough, North York, Etobicoke, Markham, Mississauga, Barrie, Stratford, Elora, etc). 
+            Authentic local favorites often exist in strip malls or residential pockets—if the search data suggests a highly-rated spot in the suburbs, PRIORITIZE it over a generic downtown cafe.
+
+            INSTRUCTIONS FOR DYNAMIC ITINERARY:
+           1. STRICT HUMAN PACING (MAX 4 STOPS): Humans are not robots! You MUST NOT schedule more than 4 actual stops/venues for the entire day, including meals. If the user's time window is massive (e.g., 8 to 15 hours), DO NOT pack it with more activities. Instead:
+            - Allocate much longer, relaxed durations to each stop.
+            - Schedule explicit "Rest/Wander Blocks" (e.g., "Spend 2 hours just wandering the boutique shops without a rigid plan", or "Grab a coffee, sit by the water, and just people-watch for an hour"). 
+            - Prioritize a slow, stress-free pace so the user never feels rushed.
+            2. NEIGHBORHOOD CLUSTERING (CRITICAL): You MUST pick ONE specific neighborhood in the GTA (e.g., "Kensington Market", "The Beaches", "Markham Main Street") and keep ALL activities strictly within a 30-minute walking or transit radius of each other. DO NOT zig-zag across the city. DO NOT send the user North, then South, then North. Pick a cluster and stay there.
+            3. THE PIVOT RULE: If the search data shows no exact events, or if you cancel an outdoor activity due to bad weather, YOU MUST TELL THE USER WHY (e.g., "Since it's raining, we swapped the hike for..."). 
+            4. EXACT SCHEDULES: Start each event with a specific time block. Name the EXACT movie title playing, EXACT Meetup group, etc. If suggesting a movie, suggest a real current or classic movie that would be playing.
+            5. NO BRACKETS: Do not use square brackets around venue names. Just bold them.
+            6. SPORTS & VENUE BOOKING: If the user selects sports requiring a facility, you MUST find real, specific private clubs or dedicated courts that allow booking. Do NOT suggest generic unbookable public parks. 
+            7. TRANSPORT & WEATHER: If 'Walking' or 'Cycling', max total distance is {distance_range}km. If Rain/Snow > 50%, keep stops indoors.
+            8. PARKING: If 'Driving', include specific nearby parking (e.g., 'Park at Green P Carpark...') for EVERY location.
+            9. MANDATORY FOOD: Include at least one restaurant/cafe that fits the local vibe.
+            10. CHEERFUL & PASSIONATE TONE: Be enthusiastic and friendly! Highlight a factual "wow factor" about the place. Show genuine love for the city.
+            11. THE SUBURBAN GEM RULE: If you find a "newly opened" spot or a "Reddit favorite" that isn't in the downtown core, include it. 
+            12. TRANSPORT (TTC SPECIFIC): If 'TTC' is selected, you MUST provide the specific subway station or bus/streetcar route numbers for every stop. Be literal (e.g., "Take Line 2 to Christie Station").
+            13. EXACT SCHEDULES & ZERO HALLUCINATION (CRITICAL): Start each event with a specific time block. If suggesting a movie, concert, or live event, you MUST ONLY use titles explicitly found in the provided 'Search Data'. If the Search Data does not list a specific movie title, DO NOT guess or invent one (e.g., do not guess unreleased movies). Instead, write "Catch a current release" and let the user check local listings.
+            14. GROUP DYNAMICS (CRITICAL): Tailor the specific venue selection and storytelling vibe to the Setting ({group_type}). 
+
+            FORMATTING TEMPLATE (YOU MUST FOLLOW THIS EXACTLY FOR EVERY STOP):
+            ### ⏰ TIME BLOCK - 📍 **VENUE NAME**
+            * **The Vibe:** [1-2 passionate sentences about why locals love it]
+            * **Transit/Parking:** [Specific TTC Line/Route or Parking advice]
+            * **Links:** [Website](https://www.google.com/search?q=VENUE+NAME+Toronto) | [Google Maps](https://www.google.com/maps/search/[Venue+Name]+Toronto)
+            * 💡 **Local Tip:** [One highly practical or insider tip]
+            ---
+            
+            13. SUMMARY (THE QUICK RECAP): End the entire itinerary with a 2-sentence cheerful summary. Sentence 1: The overall mood. Sentence 2: A practical tip.
+
+            Search Data for context: {search_results}
+
+            CRITICAL DATA BLOCK (MUST BE AT THE VERY END EXACTLY AS SHOWN):
+            Provide the map coordinates in a strict JSON block exactly like this. 
+            *IMPORTANT: Your VERY FIRST point in the JSON array must be the Start Location ({start_loc}).*
+            ```json
+            {{
+              "master_link": "http://googleusercontent.com/maps.google.com/...",
+              "points": [
+                {{"name": "Starting Point ({start_loc})", "lat": 43.74, "lon": -79.40}},
+                {{"name": "Stop 1 Name", "lat": 43.65, "lon": -79.38}}
+              ]
+            }}
+            ```
+            """
+            try:
+                response = client.models.generate_content(
+                    model=MODEL_ID, 
+                    contents=prompt
+                )
+                full_text = response.text
                 
-        except Exception as e:
-            st.error(f"🕵️ Route API Error: {e}")
-            st.stop()
+                map_points = []
+                master_link = ""
+                clean_display = full_text
+                
+                json_match = re.search(r'```json\n(.*?)\n```', full_text, re.DOTALL)
+                if json_match:
+                    data = json.loads(json_match.group(1))
+                    map_points = data.get("points", [])
+                    master_link = data.get("master_link", "")
+                    clean_display = re.sub(r'```json\n(.*?)\n```', '', full_text, flags=re.DOTALL)
+                    
+            except Exception as e:
+                st.error(f"🕵️ Route API Error: {e}")
+                st.stop()
+        
+        # SAVE EVERYTHING TO MEMORY
+        st.session_state.surprise_data = {
+            "clean_display": clean_display,
+            "map_points": map_points,
+            "master_link": master_link,
+            "weather_data": weather_data,
+            "w_res": w_res
+        }
+    else:
+        # LOAD EVERYTHING FROM MEMORY
+        clean_display = st.session_state.surprise_data["clean_display"]
+        map_points = st.session_state.surprise_data["map_points"]
+        master_link = st.session_state.surprise_data["master_link"]
+        weather_data = st.session_state.surprise_data["weather_data"]
+        w_res = st.session_state.surprise_data["w_res"]
 
     st.success("✨ Your bespoke surprise day is ready!")
     
-     # --- WEATHER DISPLAY (Restored) ---
+    # --- WEATHER DISPLAY (Restored) ---
     if weather_data:
         st.metric(
             label=f"Forecast for {selected_date.strftime('%B %d')}", 
@@ -296,7 +318,7 @@ elif st.session_state.page_stage == 'generating_surprise':
     file_name = f"Toronto_Itinerary_{selected_date.strftime('%b_%d')}.md"
     st.download_button(
         label="📄 Download Itinerary (.md)",
-        data=clean_display.encode('utf-8'), 
+        data=clean_display.encode('utf-8'),  # <--- THIS IS THE MAGIC FIX! ✨
         file_name=file_name,
         mime="text/markdown",
         type="secondary",
@@ -415,7 +437,10 @@ elif st.session_state.page_stage == 'manual':
             Authentic local favorites often exist in strip malls or residential pockets—if the search data suggests a highly-rated spot in the suburbs, PRIORITIZE it over a generic downtown cafe.
 
             INSTRUCTIONS FOR DYNAMIC ITINERARY:
-            1. STRICT STOP RULES: Provide enough activities to smoothly fill the ENTIRE USER TIME WINDOW without massive gaps. Usually, this means 3 to 5 stops depending on the length of the window. Commuting DOES NOT count as an activity. 
+            1. STRICT HUMAN PACING (MAX 4 STOPS): Humans are not robots! You MUST NOT schedule more than 4 actual stops/venues for the entire day, including meals. If the user's time window is massive (e.g., 8 to 15 hours), DO NOT pack it with more activities. Instead:
+            - Allocate much longer, relaxed durations to each stop.
+            - Schedule explicit "Rest/Wander Blocks" (e.g., "Spend 2 hours just wandering the boutique shops without a rigid plan", or "Grab a coffee, sit by the water, and just people-watch for an hour"). 
+            - Prioritize a slow, stress-free pace so the user never feels rushed.
             2. NEIGHBORHOOD CLUSTERING (CRITICAL): Do NOT zig-zag across the city. All stops must logically flow and ideally stay within a 15-minute radius of each other.
             3. THE PIVOT RULE: If the search data shows no exact events, or if you cancel an outdoor activity due to bad weather, YOU MUST TELL THE USER WHY (e.g., "Since it's raining, we swapped the hike for..."). 
             4. EXACT SCHEDULES: Start each event with a specific time block. Name the EXACT movie title playing, EXACT Meetup group, etc. If suggesting a movie, suggest a real current or classic movie that would be playing.
