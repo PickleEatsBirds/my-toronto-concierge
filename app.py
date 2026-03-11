@@ -370,14 +370,15 @@ elif st.session_state.page_stage == 'manual':
         st.rerun()
         
     CATEGORY_MAP = {
-        "Arts and Culture": ["Art Galleries", "Art Workshops", "Theater", "Art Festivals" , "Museums", "Life Drawing"],
+        "Arts and Culture": ["Galleries", "Theater", "Art Festivals" , "Museums", "Paint Night", "DIY workshops","Photography", "Musicals"],
         "City Walk": ["Historical Architecture","Street Art Walks", "Waterfront Walk", "Hidden Courtyards","Beautiful Neighbourhoods","Cozy Streets", "Boutique Shopping", "Thifting"],
-        "Food Experience": ["Hidden Speakeasies", "Vegan Tasting Menus", "Coffee Roasters", "Exotic Food Crawls", "Late Night Eats", "Romantic Dates"],
+        "Food Experience": ["Exotic Food Crawls", "Bubble Tea Time", "Asian Cuisine", "Authentic Chinese", "Hidden Speakeasies", "Late Night Eats", "Romantic Dates", "Vegan Tasting Menus", "Coffee Roasters", "Drink Up"],
         "Animal Therapy": ["Cat Cafes", "Dog Parks", "Goat Yoga", "Reptile Shows", "Animal Farms"],
-        "Nature and Outdoor": ["Hiking Trails", "Botanical Gardens", "Beach Walks","Foraging","Provincial Parks", "Bird Watching", "Picnic Spots","Star Gazing"],
-        "Sports": ["Tennis", "Badminton", "Indoor Climbing", "Biking", "Running Clubs", "Swimming", "Ski and Snowboarding"],
-        "Niche Markets": ["Flea Markets", "Artisan Pop-ups", "Farmers Markets", "Antique Fairs"],
-        "Entertainment & Hobbies": ["Live Indie Music", "Board Game Meetups", "Hot Movies", "Community Festivals", "Comedy Shows"]
+        "Nature and Outdoor": ["Hiking Trails", "Botanical Gardens", "Beach Walks","Foraging","City Parks", "Bird Watching", "Picnic Spots","Star Gazing", "Biking Adventure", "Paddling"],
+        "Sports & Fitness": ["Tennis", "Badminton", "Indoor Climbing", "Biking", "Running", "Swimming", "Skiing and Snowboarding", "Pickleball", "Yoga", "Dancing"],
+        "Niche Markets": ["Flea Markets", "Artisan Pop-ups", "Farmers Markets", "Antique Fairs", "Toront Show Events"],
+        "Entertainment": ["Live Music", "Board Game Meetups", "Movies", "Community Festivals", "Comedy Shows", "Arcade Games", "Karaoke"]
+        "Relax and self-care":["Massage Therapy", "Aroma Spa", "Facial Spa", "Maniure", "Shopping", "Baking Class"]
     }
 
     st.markdown("<h3 style='text-align: center;'>🌈 What can you do in this boring Toronto? 🧿 </h3>", unsafe_allow_html=True)
@@ -468,28 +469,32 @@ elif st.session_state.page_stage == 'manual':
             TRANSPORT MODE: {transport_mode}
             MAX DISTANCE: {distance_range}
             
-            USER PERSONA: The user has lived in Toronto for 10 years. NO tourist traps. They want authentic, off-the-beaten-path local experiences. Speak to them like a passionate peer—enthusiastic about the city's hidden gems, but keeping it real and grounded.
+            USER PERSONA: NO tourist traps. They want authentic, off-the-beaten-path local experiences. Speak to them like a passionate peer—enthusiastic about the city's hidden gems, but keeping it real and grounded.
             GEOGRAPHIC SCOPE: Expand the horizon to the entire GTA (Scarborough, North York, Etobicoke, Markham, Mississauga). 
             Authentic local favorites often exist in strip malls or residential pockets—if the search data suggests a highly-rated spot in the suburbs, PRIORITIZE it over a generic downtown cafe.
 
             INSTRUCTIONS FOR DYNAMIC ITINERARY:
-            1. STRICT HUMAN PACING (MAX 4 STOPS): Humans are not robots! You MUST NOT schedule more than 4 actual stops/venues for the entire day, including meals. If the user's time window is massive (e.g., 8 to 15 hours), DO NOT pack it with more activities. Instead:
+           1. STRICT HUMAN PACING (MAX 4 STOPS): Humans are not robots! You MUST NOT schedule more than 4 actual stops/venues for the entire day, including meals. If the user's time window is massive (e.g., 8 to 15 hours), DO NOT pack it with more activities. Instead:
             - Allocate much longer, relaxed durations to each stop.
             - Schedule explicit "Rest/Wander Blocks" (e.g., "Spend 2 hours just wandering the boutique shops without a rigid plan", or "Grab a coffee, sit by the water, and just people-watch for an hour"). 
             - Prioritize a slow, stress-free pace so the user never feels rushed.
-            2. NEIGHBORHOOD CLUSTERING (CRITICAL): Do NOT zig-zag across the city. All stops must logically flow and ideally stay within a 15-minute radius of each other.
+            2. LOCAL ANCHORING & CLUSTERING (CRITICAL): You MUST build the itinerary entirely within the {distance_range} from ({start_loc}). If they are starting late in the evening, keep them in North York, Markham, or Thornhill! DO NOT make the user commute 45+ minutes to downtown Toronto just to start their evening. Find the hidden gems in their immediate vicinity. Keep ALL activities strictly within a 15-20 minute radius of each other. Be a realistic human: if the schedule starts at 19:30, nobody wants to drive across the city just for dinner. Keep it local!
             3. THE PIVOT RULE: If the search data shows no exact events, or if you cancel an outdoor activity due to bad weather, YOU MUST TELL THE USER WHY (e.g., "Since it's raining, we swapped the hike for..."). 
             4. EXACT SCHEDULES: Start each event with a specific time block. Name the EXACT movie title playing, EXACT Meetup group, etc. If suggesting a movie, suggest a real current or classic movie that would be playing.
             5. NO BRACKETS: Do not use square brackets around venue names. Just bold them.
             6. SPORTS & VENUE BOOKING: If the user selects sports requiring a facility, you MUST find real, specific private clubs or dedicated courts that allow booking. Do NOT suggest generic unbookable public parks. 
-            7. TRANSPORT & WEATHER: If 'Walking' or 'Cycling', max total distance is {distance_range}km. If Rain/Snow > 50%, keep stops indoors.
-            8. PARKING: If 'Driving', include specific nearby parking (e.g., 'Park at Green P Carpark...') for EVERY location.
-            9. MANDATORY FOOD: Include at least one restaurant/cafe that fits the local vibe.
-            10. CHEERFUL & PASSIONATE TONE: Be enthusiastic and friendly! Highlight a factual "wow factor" about the place. Show genuine love for the city.
-            11. THE SUBURBAN GEM RULE: If you find a "newly opened" spot or a "Reddit favorite" that isn't in the downtown core, include it. 
-            12. TRANSPORT (TTC SPECIFIC): If 'TTC' is selected, you MUST provide the specific subway station or bus/streetcar route numbers for every stop. Be literal (e.g., "Take Line 2 to Christie Station").
-            13. EXACT SCHEDULES & ZERO HALLUCINATION (CRITICAL): Start each event with a specific time block. If suggesting a movie, concert, or live event, you MUST ONLY use titles explicitly found in the provided 'Search Data'. If the Search Data does not list a specific movie title, DO NOT guess or invent one (e.g., do not guess unreleased movies). Instead, write "Catch a current release" and let the user check local listings.
-            14. GROUP DYNAMICS (CRITICAL): Tailor the specific venue selection and storytelling vibe to the Setting ({group_type}). 
+            7. THE IRON-CLAD DISTANCE LIMIT: The ENTIRE itinerary must take place within a STRICT {distance_range}km radius of the Starting Location ({start_loc}). This applies to Driving, TTC, Walking, everything! If the user starts in North York with a 5km limit, DO NOT suggest Downtown Toronto, Queen West, or the CN Tower. Ban those words from your vocabulary. Keep them in their local {distance_range}km bubble!
+            8. WEATHER: If Rain/Snow > 50%, keep all stops indoors.
+            9. PARKING: If 'Driving', include specific nearby parking (e.g., 'Park at Green P Carpark...') for EVERY location.
+            10. MANDATORY FOOD: 
+              - Include at least one restaurant/cafe that fits the local vibe.
+              - Unless the user specifically requested "Exotic Food Crawls", you must PRIORITIZE authentic CHINESE cuisine (e.g., Chinese BBQ, Hot Pot, hand-pulled noodles, Cantonese cafes, Szechuan, Rice Noodle Soups, Ma La Tang). Then prioritize other ASIAN cuisine, then mexican food, then others.
+              - when ({group_type}) = "Friends", add a stop to Bubble Tea shop
+            11. CHEERFUL & PASSIONATE TONE: Be enthusiastic and friendly! Highlight a factual "wow factor" about the place. Show genuine love for the city.
+            12. THE SUBURBAN GEM RULE: If you find a "newly opened" spot or a "Reddit favorite" that isn't in the downtown core, include it. 
+            13. TRANSPORT (TTC SPECIFIC): If 'TTC' is selected, you MUST provide the specific subway station or bus/streetcar route numbers for every stop. Be literal (e.g., "Take Line 2 to Christie Station").
+            14. EXACT SCHEDULES & ZERO HALLUCINATION (CRITICAL): Start each event with a specific time block. If suggesting a movie, concert, or live event, you MUST ONLY use titles explicitly found in the provided 'Search Data'. If the Search Data does not list a specific movie title, DO NOT guess or invent one (e.g., do not guess unreleased movies). Instead, write "Catch a current release" and let the user check local listings.
+            15. GROUP DYNAMICS (CRITICAL): Tailor the specific venue selection and storytelling vibe to the Setting ({group_type}). 
             - If 'Solo': Focus on exploration, quality 'me time', and connecting with the local community.
             - If 'Couple': Focus on intimate, relaxing, and romantic atmospheres.
             - If 'Friends': Focus on fun, highly social activities, and creating shared group memories.
