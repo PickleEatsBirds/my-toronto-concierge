@@ -394,24 +394,32 @@ elif st.session_state.page_stage == 'manual':
 
     with param_col2:
         group_type = st.selectbox("Setting", ["Solo", "Couple", "Friends", "Family"])
-        transport_mode = st.radio("Primary Transport", ["TTC", "Walking", "Driving", "Biking"], horizontal=True)
+        transport_mode = st.radio("Primary Transport", ["Driving", "TTC", "Walking", "Biking"], horizontal=True)
         distance_range = st.slider("Distance Range (km)", 0, 100, 10, step=5)
 
     col1, col2 = st.columns(2)
 
     with col1:
-        times = [f"{h:02d}:{m:02d}" for h in range(7, 24) for m in (0, 30)]
+        # Changed to range(0, 24) to cover 00:00 to 23:30
+        times = [f"{h:02d}:{m:02d}" for h in range(0, 24) for m in (0, 30)]
         st.markdown("**When are you ready?**")
         time_col1, time_col2 = st.columns(2)
         with time_col1:
-            head_out = st.selectbox("Head Out Time", options=times, index=10) 
+            # Index 20 is 10:00 AM (since it starts at 00:00 now)
+            head_out = st.selectbox("Head Out Time", options=times, index=20) 
         with time_col2:
-            back_home = st.selectbox("Back Home Time", options=times, index=22) 
-        user_schedule = f"{head_out} to {back_home}"
+            # Index 44 is 22:00 (10:00 PM)
+            back_home = st.selectbox("Back Home Time", options=times, index=44) 
+        
+        # SMART MIDNIGHT LOGIC: If the end time is "earlier" than the start time, tell the AI it's tomorrow!
+        if times.index(back_home) < times.index(head_out):
+            user_schedule = f"{head_out} today to {back_home} the next day"
+        else:
+            user_schedule = f"{head_out} to {back_home}"
 
     with col2:
         st.markdown("**What are you in the mood for?**")
-        main_categories = st.multiselect("1. Choose broad vibes:", list(CATEGORY_MAP.keys()), default=["Arts and Culture"])
+        main_categories = st.multiselect("1. Choose broad vibes:", list(CATEGORY_MAP.keys()), default=["Food Experience"])
         final_interests = []
         if main_categories:
             for cat in main_categories:
