@@ -377,7 +377,7 @@ elif st.session_state.page_stage == 'manual':
         "Nature and Outdoor": ["Hiking Trails", "Botanical Gardens", "Beach Walks","Foraging","City Parks", "Bird Watching", "Picnic Spots","Star Gazing", "Biking Adventure", "Paddling"],
         "Sports & Fitness": ["Tennis", "Badminton", "Indoor Climbing", "Biking", "Running", "Swimming", "Skiing and Snowboarding", "Pickleball", "Yoga", "Dancing"],
         "Niche Markets": ["Flea Markets", "Artisan Pop-ups", "Farmers Markets", "Antique Fairs", "Toront Show Events"],
-        "Entertainment": ["Live Music", "Board Game Meetups", "Movies", "Community Festivals", "Comedy Shows", "Arcade Games", "Karaoke"]
+        "Entertainment": ["Live Music", "Board Game Meetups", "Movies", "Community Festivals", "Comedy Shows", "Arcade Games", "Karaoke"],
         "Relax and self-care":["Massage Therapy", "Aroma Spa", "Facial Spa", "Maniure", "Shopping", "Baking Class"]
     }
 
