@@ -212,8 +212,8 @@ elif st.session_state.page_stage == 'generating_surprise':
             9. PARKING: If 'Driving', include specific nearby parking (e.g., 'Park at Green P Carpark...') for EVERY location.
             10. MANDATORY FOOD: 
               - Include at least one restaurant/cafe that fits the local vibe.
-              - Unless the user specifically requested "Exotic Food Crawls", you must PRIORITIZE authentic CHINESE cuisine (e.g., Chinese BBQ, Hot Pot, hand-pulled noodles, Cantonese cafes, Szechuan, Rice Noodle Soups, Ma La Tang). Then prioritize other ASIAN cuisine, then mexican food, then others.
-              - when ({group_type}) = "Friends", add a stop to Bubble Tea shop
+              - Don't pick these bubble team shops: The Alley, Coco, Chatime, TianRen.
+              - (CRITICAL) Never have a agenda filled with FOOD and DRINK, at least non food-related event. 
             11. CHEERFUL & PASSIONATE TONE: Be enthusiastic and friendly! Highlight a factual "wow factor" about the place. Show genuine love for the city.
             12. THE SUBURBAN GEM RULE: If you find a "newly opened" spot or a "Reddit favorite" that isn't in the downtown core, include it. 
             13. TRANSPORT (TTC SPECIFIC): If 'TTC' is selected, you MUST provide the specific subway station or bus/streetcar route numbers for every stop. Be literal (e.g., "Take Line 2 to Christie Station").
@@ -381,7 +381,7 @@ elif st.session_state.page_stage == 'manual':
         "Relax and self-care":["Massage Therapy", "Aroma Spa", "Facial Spa", "Maniure", "Shopping", "Baking Class"]
     }
 
-    st.markdown("<h3 style='text-align: center;'>🌈 What can you do in this boring Toronto? 🧿 </h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='text-align: center;'>🌈 What else in Toronto? 🧿 </h3>", unsafe_allow_html=True)
     st.divider()
     st.markdown("#### 🪄 Wave Your Wand ✨")
 
@@ -496,8 +496,8 @@ elif st.session_state.page_stage == 'manual':
             9. PARKING: If 'Driving', include specific nearby parking (e.g., 'Park at Green P Carpark...') for EVERY location.
             10. MANDATORY FOOD: 
               - Include at least one restaurant/cafe that fits the local vibe.
-              - Unless the user specifically requested "Exotic Food Crawls", you must PRIORITIZE authentic CHINESE cuisine (e.g., Chinese BBQ, Hot Pot, hand-pulled noodles, Cantonese cafes, Szechuan, Rice Noodle Soups, Ma La Tang). Then prioritize other ASIAN cuisine, then mexican food, then others.
-              - when ({group_type}) = "Friends", add a stop to Bubble Tea shop
+              - Don't pick these bubble team shops: The Alley, Coco, Chatime, TianRen.
+              - (CRITICAL) Never have a agenda filled with FOOD and DRINK, at least non food-related event. 
             11. CHEERFUL & PASSIONATE TONE: Be enthusiastic and friendly! Highlight a factual "wow factor" about the place. Show genuine love for the city.
             12. THE SUBURBAN GEM RULE: If you find a "newly opened" spot or a "Reddit favorite" that isn't in the downtown core, include it. 
             13. TRANSPORT (TTC SPECIFIC): If 'TTC' is selected, you MUST provide the specific subway station or bus/streetcar route numbers for every stop. Be literal (e.g., "Take Line 2 to Christie Station").
@@ -509,7 +509,7 @@ elif st.session_state.page_stage == 'manual':
             - If 'Family': Focus on accessible, universally engaging, and bonding experiences.
 
             FORMATTING TEMPLATE (YOU MUST FOLLOW THIS EXACTLY FOR EVERY STOP):
-            ### 💫 TIME BLOCK - 🐸 **VENUE NAME**
+            ### ⏰ TIME BLOCK - 📍 **VENUE NAME**
             * **The Vibe:** [1-2 passionate sentences about why locals love it]
             * **Transit/Parking:** [Specific TTC Line/Route or Parking advice]
             * **Links:** [Website](https://www.google.com/search?q=VENUE+NAME+Toronto) | [Google Maps](https://www.google.com/maps/search/[Venue+Name]+Toronto)
