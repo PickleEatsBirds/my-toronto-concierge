@@ -117,7 +117,7 @@ elif st.session_state.page_stage == 'generating_surprise':
     # We use session state here so the random parameters don't scramble if they click download!
     if 'rand_start' not in st.session_state or st.session_state.surprise_data is None:
         surprise_locations = [
-            "Union Station, Toronto", "Kensington Market, Toronto", "The Beaches, Toronto", "Downsview Park"
+            "Union Station, Toronto", "Kensington Market, Toronto", "The Beaches, Toronto", "Downsview Park",
             "High Park, Toronto", "Danforth & Broadview, Toronto", "Yonge & Eglinton, Toronto", 
             "Scarborough Town Centre", "First Markham Place", "North York Centre, Toronto", "Little Italy", "Square One, Missisaugua"
         ]
@@ -243,13 +243,13 @@ elif st.session_state.page_stage == 'generating_surprise':
 
             CRITICAL DATA BLOCK (MUST BE AT THE VERY END EXACTLY AS SHOWN):
             Provide the map coordinates in a strict JSON block exactly like this. 
-            *IMPORTANT: Your VERY FIRST point in the JSON array must be the Start Location ({start_loc}).*
+            *IMPORTANT: Your VERY FIRST point in the JSON array must be the EXACT real-world Latitude and Longitude of the user's Starting Location ({start_loc}). You MUST calculate the real coordinates and use ACTUAL NUMBERS (floats), do not use strings!*
             ```json
             {{
-              "master_link": "http://googleusercontent.com/maps.google.com/...",
+              "master_link": "https://www.google.com/maps/dir/...",
               "points": [
-                {{"name": "Starting Point ({start_loc})", "lat": 43.74, "lon": -79.40}},
-                {{"name": "Stop 1 Name", "lat": 43.65, "lon": -79.38}}
+                {{"name": "Starting Point ({start_loc})", "lat": 44.5013, "lon": -80.3122}},
+                {{"name": "Stop 1 Name", "lat": 44.5123, "lon": -80.3221}}
               ]
             }}
             ```
