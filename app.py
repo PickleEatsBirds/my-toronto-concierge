@@ -208,8 +208,8 @@ elif st.session_state.page_stage == 'generating_surprise':
             4. EXACT SCHEDULES: Start each event with a specific time block. Name the EXACT movie title playing, EXACT Meetup group, etc. If suggesting a movie, suggest a real current or classic movie that would be playing.
             5. NO BRACKETS: Do not use square brackets around venue names. Just bold them.
             6. SPORTS & VENUE BOOKING: If the user selects sports requiring a facility, you MUST find real, specific private clubs or dedicated courts that allow booking. Do NOT suggest generic unbookable public parks. 
-            7. THE IRON-CLAD DISTANCE LIMIT: The ENTIRE itinerary must take place within a STRICT {distance_range}km radius of the Starting Location ({start_loc}). This applies to Driving, TTC, Walking, everything! If the user starts in North York with a 5km limit, DO NOT suggest Downtown Toronto, Queen West, or the CN Tower. Ban those words from your vocabulary. Keep them in their local {distance_range}km bubble!
-            8. WEATHER: If Rain/Snow > 50%, keep all stops indoors.
+            7. THE IRON-CLAD DISTANCE LIMIT (NO EXCEPTIONS): The ENTIRE itinerary must take place within a STRICT {distance_range}km radius of the Starting Location ({start_loc}). If the user starts in Barrie or Huntsville, EVERY single stop (especially food) MUST be in these areas. If the search data fails you, use your internal knowledge of real Google Maps/Yelp restaurants located EXACTLY in {start_loc}. NEVER suggest a place more than distance range.
+            8. THE SNOW & WEATHER EXCEPTION: If Rain/Snow > 50%, keep stops indoors—UNLESS the user selected "Ski and Snowboarding" or other winter outdoor activities! Snow is literally required for skiing. If they want to ski on a snowy day, send them to the mountain! Do not force them indoors.
             9. PARKING: If 'Driving', include specific nearby parking (e.g., 'Park at Green P Carpark...') for EVERY location.
             10. MANDATORY FOOD: 
               - Include at least one restaurant/cafe that fits the local vibe.
@@ -463,7 +463,7 @@ elif st.session_state.page_stage == 'manual':
         with st.spinner(f"🔮 Scouting hidden gems for {interests_str}..."):
             query = f"Toronto {interests_str} exact schedule {date_str}"
             trusted_sites = [
-                "reddit.com/r/askTO", "reddit.com/r/toronto", "reddit.com/r/FoodToronto", 
+                "yelp.ca", "tripadvisor.ca", "google.com/maps", "reddit.com/r/askTO", "reddit.com/r/toronto", "reddit.com/r/FoodToronto", 
                 "blogto.com/eat","blogto.com", "streetsoftoronto.com", "curiocity.com", 
                 "eventbrite.ca", "meetup.com", "alltrails.com", "toronto.ca/explore-enjoy/festivals-events/",
                 "toronto.ca/explore-enjoy/parks-recreation/"
