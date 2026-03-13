@@ -14,8 +14,9 @@ from streamlit_extras.let_it_rain import rain
 @st.cache_data(ttl=3600) # Caches weather for 1 hour
 def get_toronto_weather(target_date_iso):
     try:
-        lat, lon = 43.7001, -79.4163
-        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max&timezone=America%2FNew_York&forecast_days=14"
+        # NOTE: Ideally we'd pass dynamic lat/lon here, but let's at least pull snow data!
+        lat, lon = 43.7001, -79.4163 
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,snowfall_sum,wind_speed_10m_max&timezone=America%2FNew_York&forecast_days=14"
         response = requests.get(url, timeout=5)
         return response.json()
     except:
@@ -165,9 +166,15 @@ elif st.session_state.page_stage == 'generating_surprise':
                     "max": data['daily']['temperature_2m_max'][idx],
                     "min": data['daily']['temperature_2m_min'][idx],
                     "precip": data['daily']['precipitation_probability_max'][idx],
+                    "snow": data['daily']['snowfall_sum'][idx], # NEW SNOW DATA
                     "wind": data['daily']['wind_speed_10m_max'][idx]
                 }
-                w_res = f"High {weather_data['max']}°C, Low {weather_data['min']}°C, Rain {weather_data['precip']}%, Wind {weather_data['wind']}km/h"
+                
+                # Dynamic Weather String for the AI Prompt
+                if weather_data['snow'] > 0:
+                    w_res = f"High {weather_data['max']}°C, SNOWING ({weather_data['snow']}cm expected), Wind {weather_data['wind']}km/h. PERFECT FOR WINTER SPORTS!"
+                else:
+                    w_res = f"High {weather_data['max']}°C, Rain {weather_data['precip']}%, Wind {weather_data['wind']}km/h."
             else:
                 w_res = "Forecast not available for this date yet."
                 
@@ -453,11 +460,19 @@ elif st.session_state.page_stage == 'manual':
                     "max": data['daily']['temperature_2m_max'][idx],
                     "min": data['daily']['temperature_2m_min'][idx],
                     "precip": data['daily']['precipitation_probability_max'][idx],
+                    "snow": data['daily']['snowfall_sum'][idx], # NEW SNOW DATA
                     "wind": data['daily']['wind_speed_10m_max'][idx]
                 }
-                w_res = f"High {weather_data['max']}°C, Low {weather_data['min']}°C, Rain {weather_data['precip']}%, Wind {weather_data['wind']}km/h"
+                
+                # Dynamic Weather String for the AI Prompt
+                if weather_data['snow'] > 0:
+                    w_res = f"High {weather_data['max']}°C, SNOWING ({weather_data['snow']}cm expected), Wind {weather_data['wind']}km/h. PERFECT FOR WINTER SPORTS!"
+                else:
+                    w_res = f"High {weather_data['max']}°C, Rain {weather_data['precip']}%, Wind {weather_data['wind']}km/h."
             else:
                 w_res = "Forecast not available for this date yet."
+
+# By explicitly telling the AI in the `w_res` string that it's **SNOWING** and it's **PERFECT FOR WINTER SPORTS!**, it will stop treating the snow like a rainy thunderstorm and will finally push you towards the ski hills!
 
         # --- STEP 2: SEARCH ---
         with st.spinner(f"🔮 Scouting hidden gems for {interests_str}..."):
@@ -494,7 +509,7 @@ elif st.session_state.page_stage == 'manual':
             5. NO BRACKETS: Do not use square brackets around venue names. Just bold them.
             6. SPORTS & VENUE BOOKING: If the user selects sports requiring a facility, you MUST find real, specific private clubs or dedicated courts that allow booking. Do NOT suggest generic unbookable public parks. 
             7. THE IRON-CLAD DISTANCE LIMIT: The ENTIRE itinerary must take place within a STRICT {distance_range}km radius of the Starting Location ({start_loc}). This applies to Driving, TTC, Walking, everything! If the user starts in North York with a 5km limit, DO NOT suggest Downtown Toronto, Queen West, or the CN Tower. Ban those words from your vocabulary. Keep them in their local {distance_range}km bubble!
-            8. WEATHER: If Rain/Snow > 50%, keep all stops indoors.
+            8. THE WEATHER EXCEPTION (CRITICAL): If Rain > 60%, keep stops indoors. BUT WHEN the user selected "Ski and Snowboarding" or other winter outdoor activities, directly them to the ski resort! Snow is required for skiing. If they want to ski on a snowy day, send them to the mountain! Do not force them indoors.
             9. PARKING: If 'Driving', include specific nearby parking (e.g., 'Park at Green P Carpark...') for EVERY location.
             10. MANDATORY FOOD: 
               - Include at least one restaurant/cafe that fits the local vibe.
@@ -509,6 +524,7 @@ elif st.session_state.page_stage == 'manual':
             - If 'Couple': Focus on intimate, relaxing, and romantic atmospheres.
             - If 'Friends': Focus on fun, highly social activities, and creating shared group memories.
             - If 'Family': Focus on accessible, universally engaging, and bonding experiences.
+            16. STRICT CATEGORY ENFORCEMENT (STAY IN YOUR LANE): You MUST prioritize the user's selected interests: {interests_str}. If they selected "Skiing", you MUST suggest a ski resort or hill near their start location. DO NOT pivot entirely to a food crawl just because food is easier to find. Fulfill the requested categories first!
 
             FORMATTING TEMPLATE (YOU MUST FOLLOW THIS EXACTLY FOR EVERY STOP):
             ### ⏰ TIME BLOCK - 📍 **VENUE NAME**
@@ -525,17 +541,16 @@ elif st.session_state.page_stage == 'manual':
 
             CRITICAL DATA BLOCK (MUST BE AT THE VERY END EXACTLY AS SHOWN):
             Provide the map coordinates in a strict JSON block exactly like this. 
-            *IMPORTANT: Your VERY FIRST point in the JSON array must be the EXACT real-world Latitude and Longitude of the user's Starting Location ({start_loc}). DO NOT copy the placeholder text below. You MUST use your knowledge to find the real coordinates for {start_loc}!*
+            *IMPORTANT: Your VERY FIRST point in the JSON array must be the EXACT real-world Latitude and Longitude of the user's Starting Location ({start_loc}). You MUST calculate the real coordinates and use ACTUAL NUMBERS (floats), do not use strings!*
             ```json
             {{
-              "master_link": "https://www.google.com/maps/dir/...",
+              "master_link": "[https://www.google.com/maps/dir/](https://www.google.com/maps/dir/)...",
               "points": [
-                {{"name": "Starting Point ({start_loc})", "lat": "REAL_LATITUDE", "lon": "REAL_LONGITUDE"}},
-                {{"name": "Stop 1 Name", "lat": "REAL_LATITUDE", "lon": "REAL_LONGITUDE"}}
+                {{"name": "Starting Point ({start_loc})", "lat": 44.5013, "lon": -80.3122}},
+                {{"name": "Stop 1 Name", "lat": 44.5123, "lon": -80.3221}}
               ]
             }}
-            ```
-            """
+            
             try:
                 response = client.models.generate_content(
                     model=MODEL_ID, 
