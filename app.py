@@ -550,6 +550,8 @@ elif st.session_state.page_stage == 'manual':
                 {{"name": "Stop 1 Name", "lat": 44.5123, "lon": -80.3221}}
               ]
             }}
+            ```
+            """  
             
             try:
                 response = client.models.generate_content(
