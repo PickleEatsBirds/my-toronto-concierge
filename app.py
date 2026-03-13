@@ -194,8 +194,8 @@ elif st.session_state.page_stage == 'generating_surprise':
             
             MBTI TARGET: The user is an {st.session_state.mbti_choice}. TAILOR THE ENTIRE VIBE, venues, and storytelling exactly to the traits of this personality!
             
-            USER PERSONA: NO tourist traps. They want authentic, off-the-beaten-path local experiences. Speak to them like a passionate peer—enthusiastic about the city's hidden gems, but keeping it real and grounded.
-            GEOGRAPHIC SCOPE: Expand the horizon to the entire GTA (Scarborough, North York, Etobicoke, Markham, Mississauga, Barrie, Stratford, Elora, etc). 
+            USER PERSONA: The user is a local who loves exploring. NO tourist traps. Speak to them like a passionate peer—enthusiastic about hidden gems, but keeping it real and grounded.
+            GEOGRAPHIC SCOPE (CRITICAL): You cover the GTA AND all of broader Ontario (e.g., Collingwood, Blue Mountain, Barrie, Niagara, Muskoka). You MUST anchor the trip EXACTLY to the user's Starting Location ({start_loc}). If they type 'Blue Mountain' or 'Collingwood', keep ALL activities in that specific region! Do NOT drag them back to Toronto or the GTA.
             Authentic local favorites often exist in strip malls or residential pockets—if the search data suggests a highly-rated spot in the suburbs, PRIORITIZE it over a generic downtown cafe.
 
             INSTRUCTIONS FOR DYNAMIC ITINERARY:
@@ -522,15 +522,16 @@ elif st.session_state.page_stage == 'manual':
 
             Search Data for context: {search_results}
 
+
             CRITICAL DATA BLOCK (MUST BE AT THE VERY END EXACTLY AS SHOWN):
             Provide the map coordinates in a strict JSON block exactly like this. 
-            *IMPORTANT: Your VERY FIRST point in the JSON array must be the Start Location ({start_loc}).*
+            *IMPORTANT: Your VERY FIRST point in the JSON array must be the EXACT real-world Latitude and Longitude of the user's Starting Location ({start_loc}). DO NOT copy the placeholder text below. You MUST use your knowledge to find the real coordinates for {start_loc}!*
             ```json
             {{
-              "master_link": "http://googleusercontent.com/maps.google.com/...",
+              "master_link": "https://www.google.com/maps/dir/...",
               "points": [
-                {{"name": "Starting Point ({start_loc})", "lat": 43.74, "lon": -79.40}},
-                {{"name": "Stop 1 Name", "lat": 43.65, "lon": -79.38}}
+                {{"name": "Starting Point ({start_loc})", "lat": "REAL_LATITUDE", "lon": "REAL_LONGITUDE"}},
+                {{"name": "Stop 1 Name", "lat": "REAL_LATITUDE", "lon": "REAL_LONGITUDE"}}
               ]
             }}
             ```
