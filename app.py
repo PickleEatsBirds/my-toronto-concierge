@@ -209,7 +209,7 @@ elif st.session_state.page_stage == 'generating_surprise':
             5. NO BRACKETS: Do not use square brackets around venue names. Just bold them.
             6. SPORTS & VENUE BOOKING: If the user selects sports requiring a facility, you MUST find real, specific private clubs or dedicated courts that allow booking. Do NOT suggest generic unbookable public parks. 
             7. THE IRON-CLAD DISTANCE LIMIT (NO EXCEPTIONS): The ENTIRE itinerary must take place within a STRICT {distance_range}km radius of the Starting Location ({start_loc}). If the user starts in Barrie or Huntsville, EVERY single stop (especially food) MUST be in these areas. If the search data fails you, use your internal knowledge of real Google Maps/Yelp restaurants located EXACTLY in {start_loc}. NEVER suggest a place more than distance range.
-            8. THE SNOW & WEATHER EXCEPTION: If Rain/Snow > 50%, keep stops indoors—UNLESS the user selected "Ski and Snowboarding" or other winter outdoor activities! Snow is literally required for skiing. If they want to ski on a snowy day, send them to the mountain! Do not force them indoors.
+            8. THE WEATHER EXCEPTION (CRITICAL): If Rain > 60%, keep stops indoors. BUT WHEN the user selected "Ski and Snowboarding" or other winter outdoor activities, directly them to the ski resort! Snow is required for skiing. If they want to ski on a snowy day, send them to the mountain! Do not force them indoors.
             9. PARKING: If 'Driving', include specific nearby parking (e.g., 'Park at Green P Carpark...') for EVERY location.
             10. MANDATORY FOOD: 
               - Include at least one restaurant/cafe that fits the local vibe.
