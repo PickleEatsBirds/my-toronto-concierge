@@ -171,17 +171,18 @@ elif st.session_state.page_stage == 'generating_surprise':
             else:
                 w_res = "Forecast not available for this date yet."
                 
-            with st.spinner(f"🔮 Scouting hidden gems for {interests_str}..."):
-            # We split the start_loc to just grab the neighborhood name (e.g., "North York")
-                local_area = start_loc.split(',')[0] 
-                query = f"{local_area} Toronto {interests_str} exact schedule {date_str}"
+        # --- STEP 2: SEARCH ---
+        with st.spinner(f"🔮 Scouting hidden gems for {interests_str}..."):
+            # Removed the forced "Toronto" so it can actually search Mount St. Louis/Barrie
+            query = f"{start_loc} {interests_str} {date_str}"
+            
+            # Added general travel, review, and Ontario-wide sites!
             trusted_sites = [
-                "reddit.com/r/askTO", "reddit.com/r/toronto", "reddit.com/r/FoodToronto", 
-                "blogto.com/eat","blogto.com", "streetsoftoronto.com", "curiocity.com", 
-                "eventbrite.ca", "meetup.com", "alltrails.com", "toronto.ca/explore-enjoy/festivals-events/",
-                "toronto.ca/explore-enjoy/parks-recreation/"
+                "reddit.com", "blogto.com", "curiocity.com", "streetsoftoronto.com",
+                "eventbrite.ca", "meetup.com", "alltrails.com", 
+                "tripadvisor.ca", "yelp.ca", "ontariotravel.net", "destinationontario.com"
             ]
-            search_results = tavily.search(query=query, search_depth="advanced", include_images=True, include_domains=trusted_sites)
+            search_results = tavily.search(query=query, search_depth="advanced", include_images=False, include_domains=trusted_sites)
 
         with st.spinner("🦉 Hogwarts is listening to your heart..."):
             prompt = f"""
@@ -217,8 +218,9 @@ elif st.session_state.page_stage == 'generating_surprise':
             11. CHEERFUL & PASSIONATE TONE: Be enthusiastic and friendly! Highlight a factual "wow factor" about the place. Show genuine love for the city.
             12. THE SUBURBAN GEM RULE: If you find a "newly opened" spot or a "Reddit favorite" that isn't in the downtown core, include it. 
             13. TRANSPORT (TTC SPECIFIC): If 'TTC' is selected, you MUST provide the specific subway station or bus/streetcar route numbers for every stop. Be literal (e.g., "Take Line 2 to Christie Station").
-            14. EXACT SCHEDULES & ZERO HALLUCINATION (CRITICAL): Start each event with a specific time block. If suggesting a movie, concert, or live event, you MUST ONLY use titles explicitly found in the provided 'Search Data'. If the Search Data does not list a specific movie title, DO NOT guess or invent one (e.g., do not guess unreleased movies). Instead, write "Catch a current release" and let the user check local listings.
+            14. EVENTS VS. PERMANENT VENUES (THE HALLUCINATION EXCEPTION): For temporary events (movies, concerts, pop-ups), you MUST ONLY use exact titles from the 'Search Data'. However, for PERMANENT businesses (like Mount St. Louis Ski Resort, major museums, established local restaurants, or public parks), you are ALLOWED to rely on your internal knowledge to suggest them, even if they aren't explicitly in today's search data. Assume standard daily businesses are open.
             15. GROUP DYNAMICS (CRITICAL): Tailor the specific venue selection and storytelling vibe to the Setting ({group_type}). 
+            16. STRICT CATEGORY ENFORCEMENT (STAY IN YOUR LANE): You MUST prioritize the user's selected interests: {interests_str}. If they selected "Skiing", you MUST suggest a ski resort or hill near their start location. DO NOT pivot entirely to a food crawl just because food is easier to find. Fulfill the requested categories first!
 
             FORMATTING TEMPLATE (YOU MUST FOLLOW THIS EXACTLY FOR EVERY STOP):
             ### ⏰ TIME BLOCK - 📍 **VENUE NAME**
